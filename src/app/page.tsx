@@ -1,103 +1,171 @@
-import Image from "next/image";
+'use client';
+
+import { FormEvent, useMemo, useState } from 'react';
+import { useLanguage } from '@/components/language-provider';
+
+type Interaction = {
+  id: string;
+  question: string;
+  answer: string;
+  sources: string[];
+  status: 'loading' | 'ready';
+};
 
 export default function Home() {
-  return (
-    <div className="font-sans grid grid-rows-[20px_1fr_20px] items-center justify-items-center min-h-screen p-8 pb-20 gap-16 sm:p-20">
-      <main className="flex flex-col gap-[32px] row-start-2 items-center sm:items-start">
-        <Image
-          className="dark:invert"
-          src="/next.svg"
-          alt="Next.js logo"
-          width={180}
-          height={38}
-          priority
-        />
-        <ol className="font-mono list-inside list-decimal text-sm/6 text-center sm:text-left">
-          <li className="mb-2 tracking-[-.01em]">
-            Get started by editing{" "}
-            <code className="bg-black/[.05] dark:bg-white/[.06] font-mono font-semibold px-1 py-0.5 rounded">
-              src/app/page.tsx
-            </code>
-            .
-          </li>
-          <li className="tracking-[-.01em]">
-            Save and see your changes instantly.
-          </li>
-        </ol>
+  const { t } = useLanguage();
+  const [question, setQuestion] = useState('');
+  const [history, setHistory] = useState<Interaction[]>([]);
+  const [isLoading, setIsLoading] = useState(false);
 
-        <div className="flex gap-4 items-center flex-col sm:flex-row">
-          <a
-            className="rounded-full border border-solid border-transparent transition-colors flex items-center justify-center bg-foreground text-background gap-2 hover:bg-[#383838] dark:hover:bg-[#ccc] font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 sm:w-auto"
-            href="https://vercel.com/new?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            <Image
-              className="dark:invert"
-              src="/vercel.svg"
-              alt="Vercel logomark"
-              width={20}
-              height={20}
-            />
-            Deploy now
-          </a>
-          <a
-            className="rounded-full border border-solid border-black/[.08] dark:border-white/[.145] transition-colors flex items-center justify-center hover:bg-[#f2f2f2] dark:hover:bg-[#1a1a1a] hover:border-transparent font-medium text-sm sm:text-base h-10 sm:h-12 px-4 sm:px-5 w-full sm:w-auto md:w-[158px]"
-            href="https://nextjs.org/docs?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-            target="_blank"
-            rel="noopener noreferrer"
-          >
-            Read our docs
-          </a>
+  const suggestions = useMemo(() => t.qa.quickQuestions, [t]);
+
+  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+    event.preventDefault();
+    const trimmed = question.trim();
+    if (!trimmed) {
+      return;
+    }
+
+    const pendingId = `${Date.now()}`;
+    const answer = t.qa.mockAnswer;
+    const sources = t.qa.mockSources;
+
+    setHistory((prev) => [
+      ...prev,
+      {
+        id: pendingId,
+        question: trimmed,
+        answer: '',
+        sources: [],
+        status: 'loading',
+      },
+    ]);
+    setQuestion('');
+    setIsLoading(true);
+
+    setTimeout(() => {
+      setHistory((prev) =>
+        prev.map((item) =>
+          item.id === pendingId
+            ? {
+                ...item,
+                answer,
+                sources,
+                status: 'ready',
+              }
+            : item
+        )
+      );
+      setIsLoading(false);
+    }, 800);
+  };
+
+  return (
+    <section className="grid gap-8 lg:grid-cols-[minmax(0,1.8fr)_minmax(0,1fr)]">
+      <div className="rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+        <div className="flex flex-col gap-6 pb-8">
+          <div>
+            <h2 className="text-2xl font-semibold text-white sm:text-3xl">{t.qa.title}</h2>
+            <p className="mt-2 text-base text-slate-200/80 sm:text-lg">{t.qa.subtitle}</p>
+          </div>
+          <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
+            <label className="flex flex-col gap-3">
+              <span className="sr-only">{t.qa.placeholder}</span>
+              <textarea
+                value={question}
+                onChange={(event) => setQuestion(event.target.value)}
+                placeholder={t.qa.placeholder}
+                rows={5}
+                className="w-full rounded-[28px] border border-white/10 bg-slate-950/70 p-5 text-base text-white shadow-inner shadow-violet-600/10 outline-none transition focus:border-violet-300/70 focus:bg-slate-950 focus:shadow-violet-500/30"
+              />
+            </label>
+            <div className="flex flex-wrap items-center justify-between gap-4">
+              <div className="flex max-w-xl flex-wrap gap-3">
+                {suggestions.map((item) => (
+                  <button
+                    key={item}
+                    type="button"
+                    onClick={() => setQuestion(item)}
+                    className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
+                  >
+                    {item}
+                  </button>
+                ))}
+              </div>
+              <button
+                type="submit"
+                disabled={isLoading}
+                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
+              >
+                {isLoading ? t.qa.processing : t.qa.ask}
+              </button>
+            </div>
+          </form>
         </div>
-      </main>
-      <footer className="row-start-3 flex gap-[24px] flex-wrap items-center justify-center">
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org/learn?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/file.svg"
-            alt="File icon"
-            width={16}
-            height={16}
-          />
-          Learn
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://vercel.com/templates?framework=next.js&utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/window.svg"
-            alt="Window icon"
-            width={16}
-            height={16}
-          />
-          Examples
-        </a>
-        <a
-          className="flex items-center gap-2 hover:underline hover:underline-offset-4"
-          href="https://nextjs.org?utm_source=create-next-app&utm_medium=appdir-template-tw&utm_campaign=create-next-app"
-          target="_blank"
-          rel="noopener noreferrer"
-        >
-          <Image
-            aria-hidden
-            src="/globe.svg"
-            alt="Globe icon"
-            width={16}
-            height={16}
-          />
-          Go to nextjs.org →
-        </a>
-      </footer>
-    </div>
+        <div className="space-y-5">
+          <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-purple-200/90">
+              {t.qa.historyLabel}
+            </h3>
+            <p className="text-xs text-slate-300/70">{t.qa.note}</p>
+          </div>
+          <div className="space-y-4">
+            {history.length === 0 ? (
+              <div className="rounded-[28px] border border-dashed border-white/10 bg-slate-950/60 p-8 text-center text-sm text-slate-300/70">
+                {t.qa.emptyState}
+              </div>
+            ) : (
+              history.map((item) => (
+                <article
+                  key={item.id}
+                  className="space-y-4 rounded-[28px] border border-white/10 bg-slate-950/70 p-6 shadow-inner shadow-slate-950/40"
+                >
+                  <div>
+                    <p className="text-xs uppercase tracking-[0.3em] text-purple-200/80">{t.qa.ask}</p>
+                    <p className="mt-1 text-base text-white/90">{item.question}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
+                      {t.qa.newAnswerTitle}
+                    </p>
+                    <p
+                      className={`text-sm leading-relaxed text-slate-100 ${
+                        item.status === 'loading' ? 'animate-pulse text-slate-400/70' : ''
+                      }`}
+                    >
+                      {item.status === 'loading' ? t.qa.processing : item.answer}
+                    </p>
+                  </div>
+                  {item.status === 'ready' && (
+                    <div className="flex flex-wrap items-center gap-2">
+                      <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
+                        {t.qa.mockSourcesTitle}
+                      </span>
+                      {item.sources.map((source) => (
+                        <span
+                          key={source}
+                          className="rounded-full bg-emerald-500/10 px-4 py-1 text-xs text-emerald-100"
+                        >
+                          {source}
+                        </span>
+                      ))}
+                    </div>
+                  )}
+                </article>
+              ))
+            )}
+          </div>
+        </div>
+      </div>
+      <aside className="flex flex-col gap-5 rounded-[32px] border border-white/10 bg-slate-900/50 p-7 shadow-2xl shadow-slate-950/30">
+        <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-6">
+          <h3 className="text-base font-semibold text-white/90">{t.qa.samplesTitle}</h3>
+          <p className="mt-3 text-sm text-slate-300/80">{t.qa.note}</p>
+        </div>
+        <div className="rounded-[28px] border border-dashed border-violet-400/40 bg-violet-500/10 p-6 text-sm text-violet-100">
+          <p>{t.library.chunkingNote}</p>
+        </div>
+      </aside>
+    </section>
   );
 }
