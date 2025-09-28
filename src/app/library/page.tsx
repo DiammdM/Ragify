@@ -1,6 +1,10 @@
 "use client";
 
-import { ChangeEvent, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import {
+  ALLOWED_FILE_ACCEPT,
+  ALLOWED_FILE_EXTENSION_SET,
+} from "@/lib/library/file-types";
 import { useLanguage } from "@/components/language-provider";
 
 type Status = "uploaded" | "indexing" | "indexed";
@@ -9,26 +13,24 @@ type DocumentRecord = {
   id: string;
   name: string;
   size: string;
+  sizeBytes: number;
   status: Status;
   updatedAt: number;
 };
 
-const INITIAL_DOCUMENTS: DocumentRecord[] = [
-  {
-    id: "doc-1",
-    name: "Onboarding Guide.pdf",
-    size: "2.4 MB",
-    status: "indexed",
-    updatedAt: Date.now() - 1000 * 60 * 60 * 24 * 2,
-  },
-  {
-    id: "doc-2",
-    name: "Pricing FAQ.docx",
-    size: "1.1 MB",
-    status: "uploaded",
-    updatedAt: Date.now() - 1000 * 60 * 60 * 5,
-  },
-];
+type ToastMessage = {
+  type: "success" | "error";
+  text: string;
+};
+
+type ApiFile = {
+  id: string;
+  name: string;
+  size: number;
+  status: string;
+  uploadedAt?: string;
+  updatedAt?: string;
+};
 
 const formatBytes = (bytes: number) => {
   if (bytes === 0) return "0 B";
@@ -41,11 +43,39 @@ const formatBytes = (bytes: number) => {
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[exponent]}`;
 };
 
+const KNOWN_STATUSES: Status[] = ["uploaded", "indexing", "indexed"];
+
+const toStatus = (status: string): Status =>
+  KNOWN_STATUSES.includes(status as Status) ? (status as Status) : "uploaded";
+
+const toDocumentRecord = (file: ApiFile): DocumentRecord => {
+  const uploadedAt = file.updatedAt ?? file.uploadedAt ?? "";
+  const timestamp = Number.isNaN(Date.parse(uploadedAt))
+    ? Date.now()
+    : new Date(uploadedAt).getTime();
+
+  return {
+    id: file.id,
+    name: file.name,
+    size: formatBytes(file.size),
+    sizeBytes: file.size,
+    status: toStatus(file.status ?? "uploaded"),
+    updatedAt: timestamp,
+  };
+};
+
+const isSupportedFile = (fileName: string) => {
+  const extension = fileName.split(".").pop()?.toLowerCase() ?? "";
+  return extension.length > 0 && ALLOWED_FILE_EXTENSION_SET.has(extension);
+};
+
 export default function LibraryPage() {
   const { t, language } = useLanguage();
   const [documents, setDocuments] =
-    useState<DocumentRecord[]>(INITIAL_DOCUMENTS);
-  const [message, setMessage] = useState<string | null>(null);
+    useState<DocumentRecord[]>([]);
+  const [message, setMessage] = useState<ToastMessage | null>(null);
+  const [isUploading, setIsUploading] = useState(false);
+  const [isLoading, setIsLoading] = useState(true);
 
   const locale = language === "en" ? "en-US" : "zh-CN";
   const dateFormatter = useMemo(
@@ -66,57 +96,192 @@ export default function LibraryPage() {
     indexed: "border border-emerald-300/40 bg-emerald-500/15 text-emerald-100",
   };
 
-  const handleFileSelection = (event: ChangeEvent<HTMLInputElement>) => {
-    const files = event.target.files;
+  useEffect(() => {
+    let cancelled = false;
+
+    const loadDocuments = async () => {
+      try {
+        const response = await fetch("/api/library");
+        if (!response.ok) {
+          throw new Error("Failed to load documents");
+        }
+
+        const payload: { files?: ApiFile[] } = await response.json();
+        if (cancelled) {
+          return;
+        }
+
+        const nextDocuments = (payload.files ?? []).map(toDocumentRecord);
+        setDocuments(nextDocuments);
+      } catch (error) {
+        console.error("Failed to load library documents", error);
+        if (!cancelled) {
+          setMessage({ type: "error", text: t.library.loadError });
+        }
+      } finally {
+        if (!cancelled) {
+          setIsLoading(false);
+        }
+      }
+    };
+
+    loadDocuments();
+
+    return () => {
+      cancelled = true;
+    };
+  }, [t.library.loadError]);
+
+  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
     if (!files || files.length === 0) {
       return;
     }
 
-    const snapshot = Date.now();
-    const newDocs: DocumentRecord[] = Array.from(files).map((file, index) => ({
-      id: `${file.name}-${snapshot}-${index}`,
-      name: file.name,
-      size: formatBytes(file.size),
-      status: "uploaded",
-      updatedAt: Date.now(),
-    }));
-
-    setDocuments((prev) => [...newDocs, ...prev]);
-    setMessage(t.library.successToast);
-    event.target.value = "";
-  };
-
-  const handleDelete = (id: string) => {
-    setDocuments((prev) => prev.filter((doc) => doc.id !== id));
-    setMessage(t.toasts.deleted);
-  };
-
-  const handleIndex = (id: string) => {
-    setDocuments((prev) =>
-      prev.map((doc) =>
-        doc.id === id
-          ? {
-              ...doc,
-              status: "indexing",
-            }
-          : doc
-      )
+    const invalidFiles = Array.from(files).filter(
+      (file) => !isSupportedFile(file.name)
     );
-    setMessage(t.toasts.indexing);
 
-    setTimeout(() => {
-      setDocuments((prev) =>
-        prev.map((doc) =>
-          doc.id === id
-            ? {
-                ...doc,
-                status: "indexed",
-                updatedAt: Date.now(),
-              }
-            : doc
-        )
-      );
-    }, 1500);
+    if (invalidFiles.length > 0) {
+      setMessage({ type: "error", text: t.library.invalidType });
+      input.value = "";
+      return;
+    }
+
+    const formData = new FormData();
+    Array.from(files).forEach((file) => formData.append("files", file));
+
+    setIsUploading(true);
+    setMessage(null);
+
+    try {
+      const response = await fetch("/api/library/upload", {
+        method: "POST",
+        body: formData,
+      });
+
+      if (!response.ok) {
+        const errorPayload = await response.json().catch(() => null);
+        const errorMessage =
+          (errorPayload && typeof errorPayload.error === "string"
+            ? errorPayload.error
+            : undefined) ?? t.library.uploadError;
+        throw new Error(errorMessage);
+      }
+
+      const payload: { files?: ApiFile[] } = await response.json();
+
+      const newDocs: DocumentRecord[] =
+        payload.files?.map((file) => toDocumentRecord(file)) ?? [];
+
+      if (newDocs.length === 0) {
+        throw new Error(t.library.uploadError);
+      }
+
+      setDocuments((prev) => [...newDocs, ...prev]);
+      setMessage({ type: "success", text: t.library.successToast });
+    } catch (error) {
+      console.error("Failed to upload files", error);
+      let fallback = t.library.uploadError;
+      if (error instanceof Error && error.message) {
+        fallback = /unsupported file type/i.test(error.message)
+          ? t.library.invalidType
+          : error.message;
+      }
+      setMessage({ type: "error", text: fallback });
+    } finally {
+      input.value = "";
+      setIsUploading(false);
+    }
+  };
+
+  const handleDelete = async (id: string) => {
+    try {
+      const response = await fetch(`/api/library/${id}`, {
+        method: "DELETE",
+      });
+
+      if (!response.ok) {
+        throw new Error("Failed to delete document");
+      }
+
+      setDocuments((prev) => prev.filter((doc) => doc.id !== id));
+      setMessage({ type: "success", text: t.toasts.deleted });
+    } catch (error) {
+      console.error("Failed to delete document", error);
+      setMessage({ type: "error", text: t.library.operationError });
+    }
+  };
+
+  const applyDocumentUpdate = (record: DocumentRecord) => {
+    setDocuments((prev) => {
+      const index = prev.findIndex((doc) => doc.id === record.id);
+      if (index === -1) {
+        return [record, ...prev];
+      }
+
+      const next = [...prev];
+      next[index] = record;
+      return next;
+    });
+  };
+
+  const updateRemoteStatus = async (docId: string, status: Status) => {
+    const response = await fetch(`/api/library/${docId}`, {
+      method: "PATCH",
+      headers: {
+        "Content-Type": "application/json",
+      },
+      body: JSON.stringify({ status }),
+    });
+
+    if (!response.ok) {
+      const payload = await response.json().catch(() => null);
+      const errorMessage =
+        payload && typeof payload.error === "string"
+          ? payload.error
+          : "Failed to update status";
+      throw new Error(errorMessage);
+    }
+
+    const payload: { file?: ApiFile } = await response.json();
+    if (!payload.file) {
+      throw new Error("Missing file in response");
+    }
+
+    return toDocumentRecord(payload.file);
+  };
+
+  const handleIndex = async (id: string) => {
+    const target = documents.find((doc) => doc.id === id);
+    if (!target || target.status !== "uploaded") {
+      return;
+    }
+
+    try {
+      const indexingRecord = await updateRemoteStatus(id, "indexing");
+      applyDocumentUpdate(indexingRecord);
+      setMessage({ type: "success", text: t.toasts.indexing });
+
+      setTimeout(() => {
+        updateRemoteStatus(id, "indexed")
+          .then((indexedRecord) => {
+            applyDocumentUpdate(indexedRecord);
+          })
+          .catch((error) => {
+            console.error("Failed to finalize indexing", error);
+            setMessage({
+              type: "error",
+              text: t.library.operationError,
+            });
+            applyDocumentUpdate(indexingRecord);
+          });
+      }, 1500);
+    } catch (error) {
+      console.error("Failed to start indexing", error);
+      setMessage({ type: "error", text: t.library.operationError });
+    }
   };
 
   return (
@@ -130,14 +295,21 @@ export default function LibraryPage() {
             {t.library.subtitle}
           </p>
         </div>
-        <label className="flex cursor-pointer items-center gap-2 rounded-full border border-violet-300/60 bg-violet-500/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-violet-200/70 hover:bg-violet-500/30">
+        <label
+          className={`flex items-center gap-2 rounded-full border border-violet-300/60 bg-violet-500/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-violet-200/70 hover:bg-violet-500/30 ${
+            isUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"
+          }`}
+          aria-busy={isUploading}
+        >
           <input
             type="file"
             multiple
             className="hidden"
             onChange={handleFileSelection}
+            disabled={isUploading}
+            accept={ALLOWED_FILE_ACCEPT}
           />
-          {t.library.uploadCta}
+          {isUploading ? t.library.uploading : t.library.uploadCta}
         </label>
       </header>
 
@@ -147,8 +319,14 @@ export default function LibraryPage() {
       </div>
 
       {message && (
-        <div className="rounded-[28px] border border-emerald-400/40 bg-emerald-500/10 px-5 py-3 text-sm text-emerald-100">
-          {message}
+        <div
+          className={`rounded-[28px] px-5 py-3 text-sm ${
+            message.type === "error"
+              ? "border border-red-400/40 bg-red-500/10 text-red-100"
+              : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+          }`}
+        >
+          {message.text}
         </div>
       )}
 
@@ -162,7 +340,7 @@ export default function LibraryPage() {
         <div className="divide-y divide-white/5 bg-slate-950/60">
           {documents.length === 0 ? (
             <div className="px-7 py-10 text-center text-sm text-slate-300/70">
-              {t.library.emptyState}
+              {isLoading ? t.library.loading : t.library.emptyState}
             </div>
           ) : (
             documents.map((doc) => (
