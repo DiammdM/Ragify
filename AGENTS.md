@@ -1,22 +1,31 @@
 # Repository Guidelines
 
 ## Project Structure & Module Organization
-Ragify uses the Next.js App Router. Primary routes live in `src/app`, where `layout.tsx` shares chrome and `page.tsx` renders the default view. Global styles and Tailwind layers sit in `src/app/globals.css`. Place static assets in `public/` and keep planning notes in `doc/`. Group new feature modules under `src/app/<feature>` so routes and server components stay discoverable.
+- Next.js App Router lives in `src/app`; each feature sits in `src/app/<feature>` with colocated `layout.tsx` and `page.tsx` when needed.
+- Shared design scaffolding is in `src/app/layout.tsx` and global styles land in `src/app/globals.css` alongside Tailwind layer definitions.
+- Keep domain utilities and server helpers under `src/lib` or `src/server`; store static assets in `public/`, database schema in `prisma/`, and planning notes in `doc/`.
 
 ## Build, Test, and Development Commands
-- `npm run dev` launches the Turbopack dev server at `http://localhost:3000` with hot reload.
-- `npm run build` compiles an optimized production bundle; run before deploying.
-- `npm run start` serves the built output locally to confirm production behavior.
-- `npm run lint` runs ESLint with the Next.js shareable config; add `-- --fix` for auto-fixes.
+- `npm run dev` boots the Turbopack dev server at `http://localhost:3000` with hot reload; ideal for everyday work.
+- `npm run build` produces the optimized production bundle; always run before shipping.
+- `npm run start` serves the built output locally to validate production behavior.
+- `npm run lint` runs ESLint; append `-- --fix` to autofix formatting issues caught by the config.
 
 ## Coding Style & Naming Conventions
-Write new code in TypeScript with ES modules. Name React components in PascalCase (e.g., `SearchPanel`), hooks in camelCase (e.g., `useEmbeddings`), and utility files in kebab-case. Favor functional and server components, keeping client components limited to interactive needs. Use Tailwind utility groupings consistent with `globals.css`, minimizing ad-hoc CSS. Let the linter or your editor handle formatting and import order before committing.
+- Author new code in TypeScript ES modules; prefer server components and keep client components minimal and purpose-built.
+- Name React components in PascalCase (e.g., `SearchPanel`), hooks in camelCase (e.g., `useEmbeddings`), utilities in kebab-case, and tests as `*.test.tsx` or `*.spec.ts` next to the code.
+- Let Prettier via ESLint handle formatting; follow Tailwind utility grouping patterns established in `globals.css` instead of custom CSS.
 
 ## Testing Guidelines
-No automated test runner ships yet, so introduce tests alongside new functionality. Prefer colocated `*.test.tsx` or `*.spec.ts` files using React Testing Library and Vitest/Jest once configured. Validate core behaviors, edge states, and integration with Next.js server components. Until a runner is wired in, document manual verification in the PR and ensure `npm run lint` passes as a baseline gate.
+- Use React Testing Library with Vitest or Jest; create colocated tests that cover core flows, edge cases, and integration with server components.
+- Until a runner is scripted, document manual verification steps in PRs and ensure `npm run lint` passes before requesting review.
 
 ## Commit & Pull Request Guidelines
-Write commit subjects in the imperative mood with at most 72 characters, mirroring the existing history (e.g., `Add search panel state store`). Squash noisy WIP commits before opening a review. Pull requests should describe the problem, summarize the solution, list verification steps (commands, screenshots, or screencasts), and link related issues. Call out migrations or config edits so reviewers can assess deployment impact.
+- Write imperative commit subjects under 72 characters (e.g., `Add search panel state store`); squash noisy WIP history before review.
+- Pull requests should state the problem, outline the solution, list verification steps (commands, screenshots, screencasts), and link related issues.
+- Call out schema or config edits so reviewers can anticipate deployment or migration impact.
 
-## Environment & Configuration Tips
-Store secrets only in `.env.local`, reference them via `process.env`, and document required keys in the README. Update `next.config.ts` when changing runtime or image settings and note the change in your PR. Keep large binaries and generated artifacts out of version control to preserve repository size.
+## Security & Configuration Tips
+- Keep secrets in `.env.local` and access them through `process.env`; never commit sensitive values.
+- Update `next.config.ts` when changing runtime features or image domains, and note the change in the PR description.
+- Exclude generated artifacts, large binaries, and temp datasets from version control to keep the repository lean.

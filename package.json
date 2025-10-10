@@ -4,17 +4,27 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "dev": "npm run kill && next dev --turbopack",
+    "dev": "npm run kill && next dev",
+    "devNew": "npm run kill && npx dev",
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
-    "kill": "npx kill-port 3000"
+    "kill": "npx kill-port 3000",
+    "qdrant": "node ./src/test-qdrant.js"
   },
   "dependencies": {
     "@prisma/client": "^6.16.2",
+    "@qdrant/js-client-rest": "^1.15.1",
+    "@xenova/transformers": "^2.15.0",
+    "html-to-text": "^9.0.5",
+    "mammoth": "^1.6.0",
     "next": "15.5.4",
+    "pdf-parse": "^1.1.1",
     "react": "19.1.0",
-    "react-dom": "19.1.0"
+    "react-dom": "19.1.0",
+    "sharp": "^0.32.6",
+    "word-extractor": "^1.0.4",
+    "xlsx": "^0.18.5"
   },
   "devDependencies": {
     "@eslint/eslintrc": "^3",

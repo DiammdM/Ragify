@@ -2,6 +2,7 @@ import { NextResponse } from "next/server";
 import path from "path";
 import { unlink } from "fs/promises";
 import { prisma } from "@/lib/prisma";
+import { deleteExistingVectors } from "@/server/library/indexer";
 
 const VALID_STATUSES = new Set(["uploaded", "indexing", "indexed"]);
 
@@ -9,9 +10,9 @@ export const runtime = "nodejs";
 
 export async function PATCH(
   request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
   let payload: unknown;
 
   try {
@@ -53,6 +54,9 @@ export async function PATCH(
         status: document.status,
         uploadedAt: document.uploadedAt.toISOString(),
         updatedAt: document.updatedAt.toISOString(),
+        chunkCount: document.chunkCount,
+        lastIndexedAt: document.lastIndexedAt?.toISOString() ?? null,
+        embeddingModel: document.embeddingModel ?? null,
       },
     });
   } catch {
@@ -62,9 +66,9 @@ export async function PATCH(
 
 export async function DELETE(
   _request: Request,
-  { params }: { params: { id: string } }
+  { params }: { params: Promise<{ id: string }> }
 ) {
-  const { id } = params;
+  const { id } = await params;
 
   try {
     const document = await prisma.libraryDocument.delete({
@@ -72,6 +76,12 @@ export async function DELETE(
     });
 
     const absolutePath = path.join(process.cwd(), document.path);
+
+    try {
+      await deleteExistingVectors(document.id);
+    } catch (error) {
+      console.error("Failed to delete vectors", error);
+    }
 
     try {
       await unlink(absolutePath);

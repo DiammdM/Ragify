@@ -79,6 +79,7 @@ const translations = {
       successToast: 'Documents queued for indexing.',
       dropLabel: 'Drag & drop files or click to browse',
       chunkingNote: 'Indexing splits files into embeddings-ready chunks.',
+      indexSuccess: 'Indexing complete.',
     },
     settings: {
       title: 'Settings',
@@ -174,6 +175,7 @@ const translations = {
       successToast: '资料已加入索引队列。',
       dropLabel: '拖拽文件到此处或点击选择',
       chunkingNote: '索引会将文件切分为适合向量化的分片。',
+      indexSuccess: '索引完成。',
     },
     settings: {
       title: '系统设置',

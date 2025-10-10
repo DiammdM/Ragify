@@ -34,3 +34,12 @@ You can check out [the Next.js GitHub repository](https://github.com/vercel/next
 The easiest way to deploy your Next.js app is to use the [Vercel Platform](https://vercel.com/new?utm_medium=default-template&filter=next.js&utm_source=create-next-app&utm_campaign=create-next-app-readme) from the creators of Next.js.
 
 Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/building-your-application/deploying) for more details.
+
+## note
+
+Manually download Xenova/bge-m3 model by executing command below. The embedding pipeline loads the offline `onnx/sentence_transformers_int8.onnx` file from this cache（默认通过 `EMBEDDING_MODEL_QUANTIZED=false` 选择此文件，可按需调整环境变量以使用其它权重）。
+
+```sh
+conda install huggingface_hub
+huggingface-cli download Xenova/bge-m3 --local-dir .cache/transformers/Xenova/bge-m3
+```

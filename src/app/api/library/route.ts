@@ -17,6 +17,9 @@ export async function GET() {
     status: document.status,
     uploadedAt: document.uploadedAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
+    chunkCount: document.chunkCount,
+    lastIndexedAt: document.lastIndexedAt?.toISOString() ?? null,
+    embeddingModel: document.embeddingModel ?? null,
   }));
 
   return NextResponse.json({ files });

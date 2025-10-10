@@ -16,6 +16,8 @@ type DocumentRecord = {
   sizeBytes: number;
   status: Status;
   updatedAt: number;
+  chunkCount?: number;
+  embeddingModel?: string | null;
 };
 
 type ToastMessage = {
@@ -30,6 +32,9 @@ type ApiFile = {
   status: string;
   uploadedAt?: string;
   updatedAt?: string;
+  chunkCount?: number;
+  lastIndexedAt?: string | null;
+  embeddingModel?: string | null;
 };
 
 const formatBytes = (bytes: number) => {
@@ -61,6 +66,8 @@ const toDocumentRecord = (file: ApiFile): DocumentRecord => {
     sizeBytes: file.size,
     status: toStatus(file.status ?? "uploaded"),
     updatedAt: timestamp,
+    chunkCount: file.chunkCount,
+    embeddingModel: file.embeddingModel ?? null,
   };
 };
 
@@ -214,73 +221,68 @@ export default function LibraryPage() {
     }
   };
 
-  const applyDocumentUpdate = (record: DocumentRecord) => {
-    setDocuments((prev) => {
-      const index = prev.findIndex((doc) => doc.id === record.id);
-      if (index === -1) {
-        return [record, ...prev];
-      }
-
-      const next = [...prev];
-      next[index] = record;
-      return next;
-    });
-  };
-
-  const updateRemoteStatus = async (docId: string, status: Status) => {
-    const response = await fetch(`/api/library/${docId}`, {
-      method: "PATCH",
-      headers: {
-        "Content-Type": "application/json",
-      },
-      body: JSON.stringify({ status }),
-    });
-
-    if (!response.ok) {
-      const payload = await response.json().catch(() => null);
-      const errorMessage =
-        payload && typeof payload.error === "string"
-          ? payload.error
-          : "Failed to update status";
-      throw new Error(errorMessage);
-    }
-
-    const payload: { file?: ApiFile } = await response.json();
-    if (!payload.file) {
-      throw new Error("Missing file in response");
-    }
-
-    return toDocumentRecord(payload.file);
-  };
-
   const handleIndex = async (id: string) => {
     const target = documents.find((doc) => doc.id === id);
-    if (!target || target.status !== "uploaded") {
+    if (!target || target.status === "indexing") {
       return;
     }
 
-    try {
-      const indexingRecord = await updateRemoteStatus(id, "indexing");
-      applyDocumentUpdate(indexingRecord);
-      setMessage({ type: "success", text: t.toasts.indexing });
+    const previousStatus = target.status;
 
-      setTimeout(() => {
-        updateRemoteStatus(id, "indexed")
-          .then((indexedRecord) => {
-            applyDocumentUpdate(indexedRecord);
-          })
-          .catch((error) => {
-            console.error("Failed to finalize indexing", error);
-            setMessage({
-              type: "error",
-              text: t.library.operationError,
-            });
-            applyDocumentUpdate(indexingRecord);
-          });
-      }, 1500);
+    setDocuments((prev) =>
+      prev.map((doc) =>
+        doc.id === id
+          ? {
+              ...doc,
+              status: "indexing",
+            }
+          : doc
+      )
+    );
+    setMessage({ type: "success", text: t.toasts.indexing });
+
+    try {
+      const response = await fetch(`/api/library/${id}/index`, {
+        method: "POST",
+      });
+
+      if (!response.ok) {
+        const payload = await response.json().catch(() => null);
+        const errorMessage =
+          payload && typeof payload.error === "string"
+            ? payload.error
+            : t.library.operationError;
+        throw new Error(errorMessage);
+      }
+
+      const payload: { file?: ApiFile } = await response.json();
+      if (!payload.file) {
+        throw new Error("Missing indexing response");
+      }
+
+      const indexedRecord = toDocumentRecord(payload.file);
+
+      setDocuments((prev) =>
+        prev.map((doc) => (doc.id === id ? indexedRecord : doc))
+      );
+      setMessage({ type: "success", text: t.library.indexSuccess });
     } catch (error) {
-      console.error("Failed to start indexing", error);
-      setMessage({ type: "error", text: t.library.operationError });
+      console.error("Failed to index document", error);
+      const fallback =
+        error instanceof Error && error.message
+          ? error.message
+          : t.library.operationError;
+      setMessage({ type: "error", text: fallback });
+      setDocuments((prev) =>
+        prev.map((doc) =>
+          doc.id === id
+            ? {
+                ...doc,
+                status: previousStatus,
+              }
+            : doc
+        )
+      );
     }
   };
 
