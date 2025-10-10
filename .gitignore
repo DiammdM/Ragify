@@ -45,3 +45,4 @@ next-env.d.ts
 
 /doc
 /src/generated/prisma
+.cache
