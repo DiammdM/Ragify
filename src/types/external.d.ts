@@ -51,8 +51,33 @@ declare module "xlsx" {
 
 declare module "@xenova/transformers" {
   export type Tensor = {
-    data: Float32Array | number[];
+    data:
+      | Float32Array
+      | Float64Array
+      | Int32Array
+      | number[]
+      | Iterable<number>;
+    dims?: number[];
   };
+
+  export interface TransformersOnnxWasmBackend {
+    numThreads?: number;
+    simd?: boolean;
+  }
+
+  export interface TransformersBackends {
+    onnx?: {
+      wasm?: TransformersOnnxWasmBackend;
+    };
+  }
+
+  export interface TransformersEnv {
+    cacheDir?: string;
+    localModelPath?: string;
+    allowLocalModels?: boolean;
+    allowRemoteModels?: boolean;
+    backends?: TransformersBackends;
+  }
 
   export type TransformerPipeline = (
     input: string,
@@ -64,4 +89,13 @@ declare module "@xenova/transformers" {
     model?: string,
     options?: Record<string, unknown>
   ): Promise<TransformerPipeline>;
+
+  export const env: TransformersEnv;
+
+  const transformers: {
+    env: TransformersEnv;
+    pipeline: typeof pipeline;
+  };
+
+  export default transformers;
 }

@@ -1,10 +1,11 @@
 import fs from "fs";
 import path from "path";
-import type { Pipeline, Tensor } from "@xenova/transformers";
+import type { TransformerPipeline, Tensor } from "@xenova/transformers";
+import type transformers from "@xenova/transformers";
 
 export type EmbeddingVector = number[];
 
-type FeatureExtractionPipeline = Pipeline<"feature-extraction">;
+type FeatureExtractionPipeline = TransformerPipeline;
 
 const CACHE_DIR = path.resolve(
   process.cwd(),
@@ -21,14 +22,42 @@ const MODEL_QUANTIZED =
   process.env.EMBEDDING_MODEL_QUANTIZED === "true"
     ? true
     : process.env.EMBEDDING_MODEL_QUANTIZED === "false"
-      ? false
-      : DEFAULT_MODEL_QUANTIZED;
+    ? false
+    : DEFAULT_MODEL_QUANTIZED;
 const LOCAL_FILES_ONLY =
   process.env.TRANSFORMERS_LOCAL_FILES_ONLY === "false" ? false : true;
 
-let transformersModulePromise:
-  | Promise<typeof import("@xenova/transformers")>
-  | undefined;
+type TransformersModule = typeof transformers;
+
+const configureTransformersEnv = (mod: TransformersModule) => {
+  ensureCacheDir();
+
+  mod.env.cacheDir = CACHE_DIR;
+  mod.env.localModelPath = CACHE_DIR;
+  mod.env.allowLocalModels = true;
+
+  const allowRemoteEnv = process.env.TRANSFORMERS_ALLOW_REMOTE;
+  mod.env.allowRemoteModels =
+    allowRemoteEnv === "true"
+      ? true
+      : allowRemoteEnv === "false"
+      ? false
+      : !LOCAL_FILES_ONLY;
+
+  const onnx = mod.env.backends?.onnx?.wasm;
+  if (onnx) {
+    const threads = parsePositiveInteger(process.env.TRANSFORMERS_WASM_THREADS);
+    if (threads) {
+      onnx.numThreads = threads;
+    }
+
+    if (process.env.TRANSFORMERS_WASM_SIMD === "false") {
+      onnx.simd = false;
+    }
+  }
+};
+
+let transformersModulePromise: Promise<TransformersModule> | undefined;
 let pipelinePromise: Promise<FeatureExtractionPipeline> | undefined;
 
 const ensureCacheDir = () => {
@@ -46,41 +75,12 @@ const parsePositiveInteger = (value: string | undefined) => {
   return Number.isFinite(parsed) && parsed > 0 ? parsed : undefined;
 };
 
-const configureTransformersEnv = (
-  mod: typeof import("@xenova/transformers")
-) => {
-  ensureCacheDir();
-
-  mod.env.cacheDir = CACHE_DIR;
-  mod.env.localModelPath = CACHE_DIR;
-  mod.env.allowLocalModels = true;
-
-  const allowRemoteEnv = process.env.TRANSFORMERS_ALLOW_REMOTE;
-  mod.env.allowRemoteModels =
-    allowRemoteEnv === "true"
-      ? true
-      : allowRemoteEnv === "false"
-        ? false
-        : !LOCAL_FILES_ONLY;
-
-  const onnx = mod.env.backends?.onnx?.wasm;
-  if (onnx) {
-    const threads = parsePositiveInteger(process.env.TRANSFORMERS_WASM_THREADS);
-    if (threads) {
-      onnx.numThreads = threads;
-    }
-
-    if (process.env.TRANSFORMERS_WASM_SIMD === "false") {
-      onnx.simd = false;
-    }
-  }
-};
-
 const loadTransformersModule = async () => {
   if (!transformersModulePromise) {
     transformersModulePromise = import("@xenova/transformers").then((mod) => {
-      configureTransformersEnv(mod);
-      return mod;
+      const typedModule = mod as TransformersModule;
+      configureTransformersEnv(typedModule);
+      return typedModule;
     });
   }
 

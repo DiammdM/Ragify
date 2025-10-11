@@ -37,7 +37,7 @@ Check out our [Next.js deployment documentation](https://nextjs.org/docs/app/bui
 
 ## note
 
-Manually download Xenova/bge-m3 model by executing command below. The embedding pipeline loads the offline `onnx/sentence_transformers_int8.onnx` file from this cache（默认通过 `EMBEDDING_MODEL_QUANTIZED=false` 选择此文件，可按需调整环境变量以使用其它权重）。
+Manually download Xenova/bge-m3 model by executing command below. The embedding pipeline defaults to the offline `onnx/sentence_transformers_int8.onnx` weights stored in this cache; set the relevant `EMBEDDING_MODEL_*` env vars only if you need a different local build.
 
 ```sh
 conda install huggingface_hub

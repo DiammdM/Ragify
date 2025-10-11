@@ -6,7 +6,6 @@ import { embedTexts, getEmbeddingModelName } from "../embeddings/client";
 import { extractTextContent, sanitizeContent } from "./text-extractor";
 import { getQdrantClient } from "../qdrant/client";
 import type { EmbeddingVector } from "../embeddings/client";
-import { DraftModeProvider } from "next/dist/server/async-storage/draft-mode-provider";
 
 const COLLECTION_NAME =
   process.env.QDRANT_COLLECTION ?? "ragify_library_documents";

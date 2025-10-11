@@ -4,10 +4,8 @@ const globalForQdrant = globalThis as unknown as {
   qdrantClient?: QdrantClient;
 };
 
-// const QDRANT_URL = process.env.QDRANT_URL;
-// const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
-const QDRANT_URL = "http://127.0.0.1:6333";
-const QDRANT_API_KEY = "diammd-sys";
+const QDRANT_URL = process.env.QDRANT_URL;
+const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
 
 export function getQdrantClient(): QdrantClient {
   if (!QDRANT_URL) {
