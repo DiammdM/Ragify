@@ -9,7 +9,9 @@ const QDRANT_API_KEY = process.env.QDRANT_API_KEY;
 
 export function getQdrantClient(): QdrantClient {
   if (!QDRANT_URL) {
-    throw new Error("QDRANT_URL 未配置。请在 .env 中设置 Qdrant 连接地址。");
+    throw new Error(
+      "QDRANT_URL is not configured. Set the connection address in the .env file."
+    );
   }
 
   if (!globalForQdrant.qdrantClient) {

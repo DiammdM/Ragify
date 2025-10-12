@@ -94,7 +94,7 @@ export async function indexDocument(documentId: string) {
   });
 
   if (!document) {
-    throw new Error("文档不存在");
+    throw new Error("Document not found.");
   }
 
   const filePath = path.join(process.cwd(), document.path);
@@ -103,17 +103,17 @@ export async function indexDocument(documentId: string) {
   const chunks = chunkText(sanitized);
 
   if (!chunks.length) {
-    throw new Error("文档内容为空或无法解析");
+    throw new Error("Document content is empty or could not be parsed.");
   }
 
   const vectors = await embedTexts(chunks.map((chunk) => chunk.content));
   if (!vectors.length) {
-    throw new Error("向量生成失败");
+    throw new Error("Failed to generate embeddings for the document.");
   }
 
   const vectorSize = vectors[0]?.length ?? 0;
   if (!vectorSize) {
-    throw new Error("无法确定向量维度");
+    throw new Error("Unable to determine embedding vector dimension.");
   }
 
   try {
@@ -123,7 +123,7 @@ export async function indexDocument(documentId: string) {
   } catch (error) {
     if (error instanceof Error && /fetch failed/i.test(error.message)) {
       throw new Error(
-        "无法连接到 Qdrant，请确认 QDRANT_URL、QDRANT_API_KEY 配置正确且服务可访问。"
+        "Unable to connect to Qdrant. Verify QDRANT_URL and QDRANT_API_KEY and ensure the service is reachable."
       );
     }
     throw error;

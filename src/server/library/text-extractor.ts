@@ -58,7 +58,9 @@ const getPdfParser = async () => {
   if (!pdfParseModulePromise) {
     pdfParseModulePromise = import("pdf-parse").catch((error) => {
       console.error("Failed to load pdf-parse", error);
-      throw new Error("缺少 pdf-parse 依赖，请先运行 npm install pdf-parse");
+      throw new Error(
+        "Missing pdf-parse dependency. Run `npm install pdf-parse` first."
+      );
     });
   }
   const mod = await pdfParseModulePromise;
@@ -71,7 +73,7 @@ const getPdfParser = async () => {
     (mod as unknown as (data: Buffer) => Promise<{ text: string }>);
 
   if (typeof parser !== "function") {
-    throw new Error("pdf-parse 模块格式不正确");
+    throw new Error("The pdf-parse module has an invalid format.");
   }
 
   return parser;
@@ -81,14 +83,16 @@ const getMammoth = async () => {
   if (!mammothModulePromise) {
     mammothModulePromise = import("mammoth").catch((error) => {
       console.error("Failed to load mammoth", error);
-      throw new Error("缺少 mammoth 依赖，请先运行 npm install mammoth");
+      throw new Error(
+        "Missing mammoth dependency. Run `npm install mammoth` first."
+      );
     });
   }
   const mod = await mammothModulePromise;
   const api = (mod as unknown as { default?: MammothModule }).default ?? mod;
 
   if (!api || typeof (api as MammothModule).extractRawText !== "function") {
-    throw new Error("mammoth 模块格式不正确");
+    throw new Error("The mammoth module has an invalid format.");
   }
 
   return api as MammothModule;
@@ -99,7 +103,7 @@ const getHtmlToText = async () => {
     htmlToTextModulePromise = import("html-to-text").catch((error) => {
       console.error("Failed to load html-to-text", error);
       throw new Error(
-        "缺少 html-to-text 依赖，请先运行 npm install html-to-text"
+        "Missing html-to-text dependency. Run `npm install html-to-text` first."
       );
     });
   }
@@ -111,7 +115,7 @@ const getWordExtractor = async () => {
     wordExtractorModulePromise = import("word-extractor").catch((error) => {
       console.error("Failed to load word-extractor", error);
       throw new Error(
-        "缺少 word-extractor 依赖，请先运行 npm install word-extractor"
+        "Missing word-extractor dependency. Run `npm install word-extractor` first."
       );
     });
   }
@@ -119,7 +123,7 @@ const getWordExtractor = async () => {
   const Extractor =
     pkg.default ?? (pkg as unknown as { WordExtractor: unknown }).WordExtractor;
   if (!Extractor) {
-    throw new Error("word-extractor 模块加载失败");
+    throw new Error("Failed to load the word-extractor module.");
   }
   return new (Extractor as new () => {
     extract: (filePath: string) => Promise<{ getBody: () => string }>;
@@ -130,7 +134,9 @@ const getXlsx = async () => {
   if (!xlsxModulePromise) {
     xlsxModulePromise = import("xlsx").catch((error) => {
       console.error("Failed to load xlsx", error);
-      throw new Error("缺少 xlsx 依赖，请先运行 npm install xlsx");
+      throw new Error(
+        "Missing xlsx dependency. Run `npm install xlsx` first."
+      );
     });
   }
   return xlsxModulePromise;
@@ -195,7 +201,7 @@ export async function extractTextContent(filePath: string): Promise<string> {
   const extension = path.extname(filePath).slice(1).toLowerCase();
 
   if (!extension) {
-    throw new Error("无法识别的文件格式");
+    throw new Error("Unrecognized file format.");
   }
 
   if (TEXT_EXTENSIONS.has(extension) || MARKDOWN_EXTENSIONS.has(extension)) {
@@ -222,7 +228,7 @@ export async function extractTextContent(filePath: string): Promise<string> {
     return readDoc(filePath);
   }
 
-  throw new Error(`暂不支持的文件类型: ${extension}`);
+  throw new Error(`Unsupported file type: ${extension}`);
 }
 
 export function sanitizeContent(content: string) {

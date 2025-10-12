@@ -131,38 +131,38 @@ const wrapPipelineError = (error: unknown) => {
   if (error instanceof Error) {
     if (/connect timeout/i.test(error.message)) {
       return new Error(
-        "无法加载嵌入模型（连接超时）。请确认服务器可以访问 huggingface.co，或已在 TRANSFORMERS_CACHE 中缓存 Xenova/bge-m3（包含 onnx/sentence_transformers_int8.onnx）后重试。"
+        "Failed to load embedding model (connection timeout). Ensure the server can reach huggingface.co or cache Xenova/bge-m3 including onnx/sentence_transformers_int8.onnx inside TRANSFORMERS_CACHE before retrying."
       );
     }
 
     if (/Failed to fetch/i.test(error.message)) {
       return new Error(
-        "下载嵌入模型失败，请检查网络连接或设置 HF_TOKEN 后重试。"
+        "Failed to download embedding model. Check the network connection or provide HF_TOKEN before retrying."
       );
     }
 
     if (/model_path must not be empty/i.test(error.message)) {
       return new Error(
-        "加载 ONNX 模型失败，请确认已安装 onnxruntime-node 依赖，或删除缓存后重试。"
+        "Failed to load ONNX model. Verify onnxruntime-node is installed or clear the cache and try again."
       );
     }
 
     if (/sharp/i.test(error.message)) {
       return new Error(
-        "加载 @xenova/transformers 时 sharp 初始化失败。请根据 README 提示安装与平台匹配的 sharp。"
+        "Sharp failed to initialize while loading @xenova/transformers. Install a platform-compatible sharp build as described in the README."
       );
     }
 
     if (error.message.includes("Cannot find module '@xenova/transformers'")) {
       return new Error(
-        "未找到 @xenova/transformers 依赖。请运行 `npm install` 后重试。"
+        "The @xenova/transformers dependency is missing. Run `npm install` and retry."
       );
     }
   }
 
   return error instanceof Error
     ? error
-    : new Error("嵌入模型加载失败，错误信息未知。");
+    : new Error("Embedding model initialization failed and the error message is unavailable.");
 };
 
 const createPipeline = async () => {
@@ -214,7 +214,9 @@ export async function embedTexts(texts: string[]): Promise<EmbeddingVector[]> {
 
     const [vector] = tensorToVectors(output);
     if (!vector?.length) {
-      throw new Error("嵌入模型返回空向量，请检查输入文本是否有效。");
+      throw new Error(
+        "Embedding pipeline returned an empty vector. Confirm the input text is valid."
+      );
     }
 
     vectors.push(vector);
