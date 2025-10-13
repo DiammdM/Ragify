@@ -32,6 +32,7 @@ export async function POST(request: Request) {
     name: string;
     size: number;
     status: string;
+    indexingStage: string | null;
     uploadedAt: string;
     updatedAt: string;
   }> = [];
@@ -72,6 +73,7 @@ export async function POST(request: Request) {
       name: document.name,
       size: document.size,
       status: document.status,
+      indexingStage: document.indexingStage ?? null,
       uploadedAt: document.uploadedAt.toISOString(),
       updatedAt: document.updatedAt.toISOString(),
     });

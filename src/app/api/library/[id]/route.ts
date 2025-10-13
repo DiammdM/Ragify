@@ -39,11 +39,20 @@ export async function PATCH(
   }
 
   try {
+    const data: {
+      status: string;
+      indexingStage?: string | null;
+    } = {
+      status: nextStatus,
+    };
+
+    if (nextStatus !== "indexing") {
+      data.indexingStage = null;
+    }
+
     const document = await prisma.libraryDocument.update({
       where: { id },
-      data: {
-        status: nextStatus,
-      },
+      data,
     });
 
     return NextResponse.json({
@@ -52,6 +61,7 @@ export async function PATCH(
         name: document.name,
         size: document.size,
         status: document.status,
+        indexingStage: document.indexingStage,
         uploadedAt: document.uploadedAt.toISOString(),
         updatedAt: document.updatedAt.toISOString(),
         chunkCount: document.chunkCount,

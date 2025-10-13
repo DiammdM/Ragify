@@ -15,6 +15,7 @@ export async function GET() {
     name: document.name,
     size: document.size,
     status: document.status,
+    indexingStage: document.indexingStage,
     uploadedAt: document.uploadedAt.toISOString(),
     updatedAt: document.updatedAt.toISOString(),
     chunkCount: document.chunkCount,

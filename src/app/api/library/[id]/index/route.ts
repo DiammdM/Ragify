@@ -1,6 +1,9 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { indexDocument } from "@/server/library/indexer";
+import type { IndexingStage } from "@/server/library/indexing-stages";
+
+const INITIAL_STAGE: IndexingStage = "extracting";
 
 export const runtime = "nodejs";
 
@@ -15,6 +18,7 @@ export async function POST(
       where: { id },
       data: {
         status: "indexing",
+        indexingStage: INITIAL_STAGE,
       },
     });
   } catch {
@@ -30,6 +34,7 @@ export async function POST(
         name: document.name,
         size: document.size,
         status: document.status,
+        indexingStage: document.indexingStage,
         uploadedAt: document.uploadedAt.toISOString(),
         updatedAt: document.updatedAt.toISOString(),
         chunkCount: document.chunkCount,
@@ -45,6 +50,7 @@ export async function POST(
       where: { id },
       data: {
         status: "uploaded",
+        indexingStage: null,
       },
     });
 

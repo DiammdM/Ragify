@@ -8,6 +8,7 @@ import {
 import { useLanguage } from "@/components/language-provider";
 
 type Status = "uploaded" | "indexing" | "indexed";
+type IndexingStage = "extracting" | "chunking" | "embedding" | "saving";
 
 type DocumentRecord = {
   id: string;
@@ -15,6 +16,7 @@ type DocumentRecord = {
   size: string;
   sizeBytes: number;
   status: Status;
+  indexingStage: IndexingStage | null;
   updatedAt: number;
   chunkCount?: number;
   embeddingModel?: string | null;
@@ -30,6 +32,7 @@ type ApiFile = {
   name: string;
   size: number;
   status: string;
+  indexingStage?: string | null;
   uploadedAt?: string;
   updatedAt?: string;
   chunkCount?: number;
@@ -49,9 +52,22 @@ const formatBytes = (bytes: number) => {
 };
 
 const KNOWN_STATUSES: Status[] = ["uploaded", "indexing", "indexed"];
+const KNOWN_STAGES: IndexingStage[] = [
+  "extracting",
+  "chunking",
+  "embedding",
+  "saving",
+];
 
 const toStatus = (status: string): Status =>
   KNOWN_STATUSES.includes(status as Status) ? (status as Status) : "uploaded";
+
+const toIndexingStage = (
+  stage: string | null | undefined
+): IndexingStage | null =>
+  stage && KNOWN_STAGES.includes(stage as IndexingStage)
+    ? (stage as IndexingStage)
+    : null;
 
 const toDocumentRecord = (file: ApiFile): DocumentRecord => {
   const uploadedAt = file.updatedAt ?? file.uploadedAt ?? "";
@@ -65,6 +81,7 @@ const toDocumentRecord = (file: ApiFile): DocumentRecord => {
     size: formatBytes(file.size),
     sizeBytes: file.size,
     status: toStatus(file.status ?? "uploaded"),
+    indexingStage: toIndexingStage(file.indexingStage ?? null),
     updatedAt: timestamp,
     chunkCount: file.chunkCount,
     embeddingModel: file.embeddingModel ?? null,
@@ -235,6 +252,7 @@ export default function LibraryPage() {
           ? {
               ...doc,
               status: "indexing",
+              indexingStage: "extracting",
             }
           : doc
       )
@@ -279,6 +297,7 @@ export default function LibraryPage() {
             ? {
                 ...doc,
                 status: previousStatus,
+                indexingStage: previousStatus === "indexing" ? doc.indexingStage : null,
               }
             : doc
         )
@@ -364,7 +383,11 @@ export default function LibraryPage() {
                     statusStyles[doc.status]
                   }`}
                 >
-                  {t.library.status[doc.status]}
+                  {doc.status === "indexing" && doc.indexingStage
+                    ? `${t.library.status.indexing} · ${
+                        t.library.indexingStages[doc.indexingStage]
+                      }`
+                    : t.library.status[doc.status]}
                 </span>
                 <span className="text-xs text-slate-200/80">
                   {dateFormatter.format(doc.updatedAt)}
@@ -379,7 +402,9 @@ export default function LibraryPage() {
                     className="rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {doc.status === "indexing"
-                      ? t.library.status.indexing
+                      ? doc.indexingStage
+                        ? t.library.indexingStages[doc.indexingStage]
+                        : t.library.status.indexing
                       : t.library.indexAction}
                   </button>
                   <button

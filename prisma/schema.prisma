@@ -25,6 +25,7 @@ model LibraryDocument {
   name       String
   size       Int
   status     String   @default("uploaded")
+  indexingStage String?
   path       String
   uploadedAt DateTime @default(now())
   updatedAt  DateTime @updatedAt
