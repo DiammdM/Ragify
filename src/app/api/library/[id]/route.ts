@@ -42,11 +42,19 @@ export async function PATCH(
     const data: {
       status: string;
       indexingStage?: string | null;
+      indexingProgress?: number | null;
     } = {
       status: nextStatus,
     };
 
     if (nextStatus !== "indexing") {
+      data.indexingStage = null;
+    }
+
+    if (nextStatus === "uploaded") {
+      data.indexingProgress = 0;
+    } else if (nextStatus === "indexed") {
+      data.indexingProgress = 100;
       data.indexingStage = null;
     }
 
@@ -62,6 +70,7 @@ export async function PATCH(
         size: document.size,
         status: document.status,
         indexingStage: document.indexingStage,
+        indexingProgress: document.indexingProgress ?? 0,
         uploadedAt: document.uploadedAt.toISOString(),
         updatedAt: document.updatedAt.toISOString(),
         chunkCount: document.chunkCount,

@@ -17,6 +17,7 @@ type DocumentRecord = {
   sizeBytes: number;
   status: Status;
   indexingStage: IndexingStage | null;
+  indexingProgress: number;
   updatedAt: number;
   chunkCount?: number;
   embeddingModel?: string | null;
@@ -33,6 +34,7 @@ type ApiFile = {
   size: number;
   status: string;
   indexingStage?: string | null;
+  indexingProgress?: number | null;
   uploadedAt?: string;
   updatedAt?: string;
   chunkCount?: number;
@@ -69,6 +71,14 @@ const toIndexingStage = (
     ? (stage as IndexingStage)
     : null;
 
+const clampProgress = (value: number | null | undefined) => {
+  if (typeof value !== "number" || !Number.isFinite(value)) {
+    return 0;
+  }
+  const rounded = Math.round(value);
+  return Math.max(0, Math.min(100, rounded));
+};
+
 const toDocumentRecord = (file: ApiFile): DocumentRecord => {
   const uploadedAt = file.updatedAt ?? file.uploadedAt ?? "";
   const timestamp = Number.isNaN(Date.parse(uploadedAt))
@@ -82,6 +92,7 @@ const toDocumentRecord = (file: ApiFile): DocumentRecord => {
     sizeBytes: file.size,
     status: toStatus(file.status ?? "uploaded"),
     indexingStage: toIndexingStage(file.indexingStage ?? null),
+    indexingProgress: clampProgress(file.indexingProgress ?? 0),
     updatedAt: timestamp,
     chunkCount: file.chunkCount,
     embeddingModel: file.embeddingModel ?? null,
@@ -95,8 +106,7 @@ const isSupportedFile = (fileName: string) => {
 
 export default function LibraryPage() {
   const { t, language } = useLanguage();
-  const [documents, setDocuments] =
-    useState<DocumentRecord[]>([]);
+  const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [message, setMessage] = useState<ToastMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
@@ -119,6 +129,11 @@ export default function LibraryPage() {
     indexing: "border border-amber-300/40 bg-amber-500/15 text-amber-100",
     indexed: "border border-emerald-300/40 bg-emerald-500/15 text-emerald-100",
   };
+
+  const hasIndexingDocuments = useMemo(
+    () => documents.some((doc) => doc.status === "indexing"),
+    [documents]
+  );
 
   useEffect(() => {
     let cancelled = false;
@@ -155,6 +170,65 @@ export default function LibraryPage() {
       cancelled = true;
     };
   }, [t.library.loadError]);
+
+  useEffect(() => {
+    if (!hasIndexingDocuments) {
+      return;
+    }
+
+    let cancelled = false;
+    let timeoutId: ReturnType<typeof setTimeout> | undefined;
+
+    const pollDocuments = async () => {
+      try {
+        const response = await fetch("/api/library");
+        if (!response.ok) {
+          throw new Error("Failed to load documents");
+        }
+
+        const payload: { files?: ApiFile[] } = await response.json();
+        if (cancelled) {
+          return;
+        }
+
+        const nextDocuments = (payload.files ?? []).map(toDocumentRecord);
+        setDocuments((prev) => {
+          const previousById = new Map(prev.map((doc) => [doc.id, doc]));
+          const completed = nextDocuments.some((doc) => {
+            if (doc.status !== "indexed") {
+              return false;
+            }
+            const previous = previousById.get(doc.id);
+            return previous?.status === "indexing";
+          });
+
+          if (completed) {
+            setMessage({ type: "success", text: t.library.indexSuccess });
+          }
+
+          return nextDocuments;
+        });
+      } catch (error) {
+        console.error("Failed to refresh indexing progress", error);
+        if (!cancelled) {
+          setMessage({ type: "error", text: t.library.operationError });
+        }
+      } finally {
+        if (!cancelled) {
+          timeoutId = setTimeout(pollDocuments, 4000);
+        }
+      }
+    };
+
+    pollDocuments();
+
+    return () => {
+      cancelled = true;
+      if (timeoutId) {
+        clearTimeout(timeoutId);
+      }
+    };
+  }, [hasIndexingDocuments, t.library.operationError, t.library.indexSuccess]);
 
   const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
     const input = event.target as HTMLInputElement;
@@ -245,6 +319,8 @@ export default function LibraryPage() {
     }
 
     const previousStatus = target.status;
+    const previousStage = target.indexingStage;
+    const previousProgress = target.indexingProgress;
 
     setDocuments((prev) =>
       prev.map((doc) =>
@@ -253,6 +329,7 @@ export default function LibraryPage() {
               ...doc,
               status: "indexing",
               indexingStage: "extracting",
+              indexingProgress: 0,
             }
           : doc
       )
@@ -283,7 +360,6 @@ export default function LibraryPage() {
       setDocuments((prev) =>
         prev.map((doc) => (doc.id === id ? indexedRecord : doc))
       );
-      setMessage({ type: "success", text: t.library.indexSuccess });
     } catch (error) {
       console.error("Failed to index document", error);
       const fallback =
@@ -297,7 +373,8 @@ export default function LibraryPage() {
             ? {
                 ...doc,
                 status: previousStatus,
-                indexingStage: previousStatus === "indexing" ? doc.indexingStage : null,
+                indexingStage: previousStage,
+                indexingProgress: previousProgress,
               }
             : doc
         )
@@ -364,12 +441,30 @@ export default function LibraryPage() {
               {isLoading ? t.library.loading : t.library.emptyState}
             </div>
           ) : (
-            documents.map((doc) => (
-              <div
-                key={doc.id}
-                className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-white/90"
-              >
-                <div className="min-w-0 space-y-1">
+            documents.map((doc) => {
+              const stageLabel =
+                doc.indexingStage && t.library.indexingStages[doc.indexingStage]
+                  ? t.library.indexingStages[doc.indexingStage]
+                  : null;
+              const isIndexing = doc.status === "indexing";
+              const progressLabel = isIndexing
+                ? ` (${doc.indexingProgress}%)`
+                : "";
+              const statusLabel = isIndexing
+                ? `${t.library.status.indexing}${
+                    stageLabel ? ` · ${stageLabel}` : ""
+                  }${progressLabel}`
+                : t.library.status[doc.status];
+              const actionLabel = isIndexing
+                ? `${stageLabel ?? t.library.status.indexing}${progressLabel}`
+                : t.library.indexAction;
+
+              return (
+                <div
+                  key={doc.id}
+                  className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-white/90"
+                >
+                  <div className="min-w-0 space-y-1">
                   <p className="truncate text-base font-semibold text-white">
                     {doc.name}
                   </p>
@@ -383,11 +478,7 @@ export default function LibraryPage() {
                     statusStyles[doc.status]
                   }`}
                 >
-                  {doc.status === "indexing" && doc.indexingStage
-                    ? `${t.library.status.indexing} · ${
-                        t.library.indexingStages[doc.indexingStage]
-                      }`
-                    : t.library.status[doc.status]}
+                  {statusLabel}
                 </span>
                 <span className="text-xs text-slate-200/80">
                   {dateFormatter.format(doc.updatedAt)}
@@ -401,11 +492,7 @@ export default function LibraryPage() {
                     }
                     className="rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                   >
-                    {doc.status === "indexing"
-                      ? doc.indexingStage
-                        ? t.library.indexingStages[doc.indexingStage]
-                        : t.library.status.indexing
-                      : t.library.indexAction}
+                    {actionLabel}
                   </button>
                   <button
                     type="button"
@@ -416,7 +503,8 @@ export default function LibraryPage() {
                   </button>
                 </div>
               </div>
-            ))
+              );
+            })
           )}
         </div>
       </div>
