@@ -7,9 +7,8 @@ import { extractTextContent, sanitizeContent } from "./text-extractor";
 import { getQdrantClient } from "../qdrant/client";
 import type { EmbeddingVector } from "../embeddings/client";
 import { type IndexingStage } from "./indexing-stages";
-
-const COLLECTION_NAME =
-  process.env.QDRANT_COLLECTION ?? "ragify_library_documents";
+import { LIBRARY_COLLECTION_NAME } from "../qdrant/constants";
+import { normalizeQdrantError } from "../qdrant/errors";
 
 type QdrantVectorConfig =
   | { size: number; distance?: string | undefined }
@@ -95,19 +94,19 @@ const ensureCollection = async (vectorSize: number) => {
   };
 
   try {
-    const collection = await client.getCollection(COLLECTION_NAME);
+    const collection = await client.getCollection(LIBRARY_COLLECTION_NAME);
     const currentVectors = collection.config.params.vectors as
       | QdrantVectorConfig
       | undefined;
     const currentSize = extractVectorSize(currentVectors);
 
     if (usesNamedVectors(currentVectors) || currentSize !== vectorSize) {
-      await client.recreateCollection(COLLECTION_NAME, desiredConfig);
+      await client.recreateCollection(LIBRARY_COLLECTION_NAME, desiredConfig);
     }
 
     return client;
   } catch {
-    await client.createCollection(COLLECTION_NAME, desiredConfig);
+    await client.createCollection(LIBRARY_COLLECTION_NAME, desiredConfig);
     return client;
   }
 };
@@ -116,7 +115,7 @@ export const deleteExistingVectors = async (documentId: string) => {
   const client = getQdrantClient();
 
   try {
-    await client.delete(COLLECTION_NAME, {
+    await client.delete(LIBRARY_COLLECTION_NAME, {
       filter: {
         must: [
           {
@@ -183,7 +182,7 @@ const upsertChunks = async (
           };
         });
 
-      await client.upsert(COLLECTION_NAME, { points: batchPoints });
+      await client.upsert(LIBRARY_COLLECTION_NAME, { points: batchPoints });
     }
   } catch (error) {
     throw error;
@@ -221,53 +220,6 @@ const updateIndexingState = async (
     where: { id: documentId },
     data,
   });
-};
-
-const normalizeQdrantError = (error: unknown) => {
-  if (error instanceof Error && /fetch failed/i.test(error.message)) {
-    return new Error(
-      "Unable to connect to Qdrant. Verify QDRANT_URL and QDRANT_API_KEY and ensure the service is reachable."
-    );
-  }
-
-  if (error && typeof error === "object") {
-    const status =
-      typeof (error as { status?: unknown }).status === "number"
-        ? (error as { status: number }).status
-        : undefined;
-    const statusText =
-      typeof (error as { statusText?: unknown }).statusText === "string"
-        ? (error as { statusText: string }).statusText
-        : undefined;
-    const data = (error as { data?: unknown }).data;
-
-    const detail =
-      typeof data === "string"
-        ? data
-        : data && typeof data === "object"
-        ? typeof (data as { error?: unknown }).error === "string"
-          ? (data as { error: string }).error
-          : typeof (data as { message?: unknown }).message === "string"
-          ? (data as { message: string }).message
-          : (() => {
-              try {
-                return JSON.stringify(data);
-              } catch {
-                return undefined;
-              }
-            })()
-        : undefined;
-
-    if (status || statusText || detail) {
-      const label = status ? `Qdrant request failed (${status})` : "Qdrant request failed";
-      const reason = detail ?? statusText ?? "Request was rejected without details.";
-      return new Error(`${label}: ${reason}`, {
-        cause: error instanceof Error ? error : undefined,
-      });
-    }
-  }
-
-  return error instanceof Error ? error : new Error(String(error));
 };
 
 export async function indexDocument(documentId: string) {

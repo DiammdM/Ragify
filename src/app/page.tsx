@@ -3,13 +3,63 @@
 import { FormEvent, useMemo, useState } from 'react';
 import { useLanguage } from '@/components/language-provider';
 
+type ChunkResult = {
+  id: string;
+  content: string;
+  documentName: string | null;
+  documentId: string | null;
+  chunkIndex: number | null;
+  score: number;
+};
+
+type InteractionStatus = 'loading' | 'ready' | 'error';
+
 type Interaction = {
   id: string;
   question: string;
-  answer: string;
-  sources: string[];
-  status: 'loading' | 'ready';
+  results: ChunkResult[];
+  status: InteractionStatus;
+  error?: string;
 };
+
+type ApiResult = Partial<ChunkResult> & {
+  id?: string;
+};
+
+type ApiResponse = {
+  results?: ApiResult[];
+  error?: string;
+};
+
+const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
+  id: typeof result.id === 'string' ? result.id : fallbackId,
+  content: typeof result.content === 'string' ? result.content.trim() : '',
+  documentName:
+    typeof result.documentName === 'string' ? result.documentName : null,
+  documentId:
+    typeof result.documentId === 'string' ? result.documentId : null,
+  chunkIndex:
+    typeof result.chunkIndex === 'number' && Number.isFinite(result.chunkIndex)
+      ? result.chunkIndex
+      : null,
+  score:
+    typeof result.score === 'number' && Number.isFinite(result.score)
+      ? result.score
+      : 0,
+});
+
+const normalizeResults = (results?: ApiResult[]) => {
+  if (!Array.isArray(results)) {
+    return [];
+  }
+  const timestamp = Date.now();
+  return results.map((result, index) =>
+    toChunkResult(result, `result-${timestamp}-${index}`)
+  );
+};
+
+const formatScore = (score: number) =>
+  (Number.isFinite(score) ? score : 0).toFixed(3);
 
 export default function Home() {
   const { t } = useLanguage();
@@ -19,7 +69,7 @@ export default function Home() {
 
   const suggestions = useMemo(() => t.qa.quickQuestions, [t]);
 
-  const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
+  const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
     const trimmed = question.trim();
     if (!trimmed) {
@@ -27,37 +77,67 @@ export default function Home() {
     }
 
     const pendingId = `${Date.now()}`;
-    const answer = t.qa.mockAnswer;
-    const sources = t.qa.mockSources;
 
     setHistory((prev) => [
       ...prev,
       {
         id: pendingId,
         question: trimmed,
-        answer: '',
-        sources: [],
+        results: [],
         status: 'loading',
       },
     ]);
     setQuestion('');
     setIsLoading(true);
 
-    setTimeout(() => {
+    try {
+      const response = await fetch('/api/qa', {
+        method: 'POST',
+        headers: {
+          'Content-Type': 'application/json',
+        },
+        body: JSON.stringify({ question: trimmed }),
+      });
+
+      const data: ApiResponse = await response.json();
+      if (!response.ok) {
+        const message =
+          typeof data.error === 'string' && data.error
+            ? data.error
+            : t.qa.errorFallback;
+        throw new Error(message);
+      }
+
+      const matches = normalizeResults(data.results);
       setHistory((prev) =>
         prev.map((item) =>
           item.id === pendingId
             ? {
                 ...item,
-                answer,
-                sources,
+                results: matches,
                 status: 'ready',
               }
             : item
         )
       );
+    } catch (error) {
+      console.error('Failed to query knowledge base', error);
+      const message =
+        error instanceof Error ? error.message : t.qa.errorFallback;
+      setHistory((prev) =>
+        prev.map((item) =>
+          item.id === pendingId
+            ? {
+                ...item,
+                status: 'error',
+                error: message,
+              }
+            : item
+        )
+      );
+    } finally {
       setIsLoading(false);
-    }, 800);
+    }
   };
 
   return (
@@ -125,32 +205,47 @@ export default function Home() {
                     <p className="mt-1 text-base text-white/90">{item.question}</p>
                   </div>
                   <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
-                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-                      {t.qa.newAnswerTitle}
+                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
+                      {t.qa.resultsTitle}
                     </p>
-                    <p
-                      className={`text-sm leading-relaxed text-slate-100 ${
-                        item.status === 'loading' ? 'animate-pulse text-slate-400/70' : ''
-                      }`}
-                    >
-                      {item.status === 'loading' ? t.qa.processing : item.answer}
-                    </p>
+                    {item.status === 'loading' ? (
+                      <p className="text-sm leading-relaxed text-slate-400/70 animate-pulse">
+                        {t.qa.processing}
+                      </p>
+                    ) : item.status === 'error' ? (
+                      <p className="text-sm leading-relaxed text-rose-200">
+                        {item.error ?? t.qa.errorFallback}
+                      </p>
+                    ) : item.results.length === 0 ? (
+                      <p className="text-sm leading-relaxed text-slate-300/80">{t.qa.resultsEmpty}</p>
+                    ) : (
+                      <ul className="space-y-3">
+                        {item.results.map((result) => (
+                          <li
+                            key={result.id}
+                            className="rounded-2xl border border-white/5 bg-slate-900/70 p-4 shadow-inner shadow-black/20"
+                          >
+                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+                              <span className="font-semibold uppercase tracking-[0.25em] text-purple-200/90">
+                                {result.documentName ?? t.qa.unknownDocument}
+                              </span>
+                              <span className="text-[11px]">
+                                {t.qa.scoreLabel}: {formatScore(result.score)}
+                              </span>
+                            </div>
+                            {result.chunkIndex !== null && (
+                              <p className="mt-1 text-[11px] uppercase tracking-[0.35em] text-slate-500">
+                                {t.qa.chunkLabel} {result.chunkIndex + 1}
+                              </p>
+                            )}
+                            <p className="mt-2 text-sm leading-relaxed text-slate-100">
+                              {result.content || t.qa.emptyChunk}
+                            </p>
+                          </li>
+                        ))}
+                      </ul>
+                    )}
                   </div>
-                  {item.status === 'ready' && (
-                    <div className="flex flex-wrap items-center gap-2">
-                      <span className="text-xs font-semibold uppercase tracking-widest text-slate-400">
-                        {t.qa.mockSourcesTitle}
-                      </span>
-                      {item.sources.map((source) => (
-                        <span
-                          key={source}
-                          className="rounded-full bg-emerald-500/10 px-4 py-1 text-xs text-emerald-100"
-                        >
-                          {source}
-                        </span>
-                      ))}
-                    </div>
-                  )}
                 </article>
               ))
             )}
