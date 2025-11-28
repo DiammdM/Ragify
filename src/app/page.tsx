@@ -10,6 +10,7 @@ type ChunkResult = {
   documentId: string | null;
   chunkIndex: number | null;
   score: number;
+  vectorScore?: number | null;
 };
 
 type InteractionStatus = 'loading' | 'ready' | 'error';
@@ -46,6 +47,10 @@ const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
     typeof result.score === 'number' && Number.isFinite(result.score)
       ? result.score
       : 0,
+  vectorScore:
+    typeof result.vectorScore === 'number' && Number.isFinite(result.vectorScore)
+      ? result.vectorScore
+      : null,
 });
 
 const normalizeResults = (results?: ApiResult[]) => {

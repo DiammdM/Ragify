@@ -8,6 +8,8 @@ const DEFAULT_RESULT_LIMIT = 10;
 export type RetrievedChunk = {
   id: string;
   score: number;
+  vectorScore: number;
+  crossScore?: number | null;
   content: string;
   documentId: string | null;
   documentName: string | null;
@@ -70,9 +72,15 @@ export async function searchLibraryChunks(
     return (points ?? []).map((point) => {
       const payload = (point.payload ?? {}) as Record<string, unknown>;
 
+      const vectorScore =
+        typeof point.score === "number" && Number.isFinite(point.score)
+          ? point.score
+          : 0;
+
       return {
         id: toStringId(point.id),
-        score: typeof point.score === "number" ? point.score : 0,
+        score: vectorScore,
+        vectorScore,
         content: toStringOrNull(payload.content) ?? "",
         documentId: toStringOrNull(payload.documentId),
         documentName: toStringOrNull(payload.documentName),

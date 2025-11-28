@@ -228,3 +228,9 @@ export async function embedTexts(texts: string[]): Promise<EmbeddingVector[]> {
 export function getEmbeddingModelName() {
   return MODEL_ID;
 }
+
+export async function getTransformersModule() {
+  return loadTransformersModule();
+}
+
+export const TRANSFORMERS_CACHE_DIR = CACHE_DIR;

@@ -1,5 +1,6 @@
 import { NextResponse } from "next/server";
 import { searchLibraryChunks } from "@/server/library/search";
+import { rerankChunks } from "@/server/rerank/cross-encoder";
 
 export const runtime = "nodejs";
 
@@ -28,7 +29,11 @@ export async function POST(request: Request) {
   }
 
   try {
-    const results = await searchLibraryChunks(question, { limit: 10 });
+    const retrievalResults = await searchLibraryChunks(question, { limit: 10 });
+    const results = await rerankChunks(question, retrievalResults, {
+      limit: 3,
+    });
+
     return NextResponse.json({ results });
   } catch (error) {
     console.error("Failed to search library chunks", error);

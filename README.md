@@ -43,3 +43,11 @@ Manually download Xenova/bge-m3 model by executing command below. The embedding 
 conda install huggingface_hub
 huggingface-cli download Xenova/bge-m3 --local-dir .cache/transformers/Xenova/bge-m3
 ```
+
+When running in a fully offline environment, also download the cross-encoder reranker weights (note the Xenova-converted repo id):
+
+```sh
+huggingface-cli download Xenova/cross-encoder-ms-marco-MiniLM-L-6-v2 --local-dir .cache/transformers/Xenova/cross-encoder-ms-marco-MiniLM-L-6-v2
+```
+
+If the reranker weights live in a different directory, set `CROSS_ENCODER_MODEL_PATH` to that repo-relative path inside `.cache/transformers` (for example, `cross-encoder/ms-marco-MiniLM-L-6-v2`). Override `CROSS_ENCODER_MODEL_FILE` or `CROSS_ENCODER_MODEL_QUANTIZED` if you downloaded alternative ONNX variants.
