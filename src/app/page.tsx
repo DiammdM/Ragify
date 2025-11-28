@@ -11,6 +11,7 @@ type ChunkResult = {
   chunkIndex: number | null;
   score: number;
   vectorScore?: number | null;
+  crossScore?: number | null;
 };
 
 type InteractionStatus = 'loading' | 'ready' | 'error';
@@ -21,14 +22,29 @@ type Interaction = {
   results: ChunkResult[];
   status: InteractionStatus;
   error?: string;
+  answer?: string;
+  answerProvider?: string | null;
+  answerModel?: string | null;
+  answerError?: string | null;
 };
 
 type ApiResult = Partial<ChunkResult> & {
   id?: string;
 };
 
+type ApiAnswer =
+  | {
+      text?: string;
+      provider?: string | null;
+      model?: string | null;
+    }
+  | null
+  | undefined;
+
 type ApiResponse = {
   results?: ApiResult[];
+  answer?: ApiAnswer;
+  answerError?: string | null;
   error?: string;
 };
 
@@ -51,6 +67,10 @@ const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
     typeof result.vectorScore === 'number' && Number.isFinite(result.vectorScore)
       ? result.vectorScore
       : null,
+  crossScore:
+    typeof result.crossScore === 'number' && Number.isFinite(result.crossScore)
+      ? result.crossScore
+      : null,
 });
 
 const normalizeResults = (results?: ApiResult[]) => {
@@ -61,6 +81,33 @@ const normalizeResults = (results?: ApiResult[]) => {
   return results.map((result, index) =>
     toChunkResult(result, `result-${timestamp}-${index}`)
   );
+};
+
+const normalizeAnswer = (answer?: ApiAnswer) => {
+  if (!answer || typeof answer !== 'object') {
+    return null;
+  }
+
+  const text =
+    typeof answer.text === 'string' && answer.text.trim().length > 0
+      ? answer.text.trim()
+      : '';
+
+  const provider =
+    typeof answer.provider === 'string' && answer.provider.length > 0
+      ? answer.provider
+      : null;
+
+  const model =
+    typeof answer.model === 'string' && answer.model.length > 0
+      ? answer.model
+      : null;
+
+  if (!text && !provider && !model) {
+    return null;
+  }
+
+  return { text, provider, model };
 };
 
 const formatScore = (score: number) =>
@@ -114,12 +161,21 @@ export default function Home() {
       }
 
       const matches = normalizeResults(data.results);
+      const answerPayload = normalizeAnswer(data.answer);
+      const answerError =
+        typeof data.answerError === 'string' && data.answerError.length > 0
+          ? data.answerError
+          : null;
       setHistory((prev) =>
         prev.map((item) =>
           item.id === pendingId
             ? {
                 ...item,
                 results: matches,
+                answer: answerPayload?.text ?? '',
+                answerProvider: answerPayload?.provider ?? null,
+                answerModel: answerPayload?.model ?? null,
+                answerError,
                 status: 'ready',
               }
             : item
@@ -208,6 +264,32 @@ export default function Home() {
                   <div>
                     <p className="text-xs uppercase tracking-[0.3em] text-purple-200/80">{t.qa.ask}</p>
                     <p className="mt-1 text-base text-white/90">{item.question}</p>
+                  </div>
+                  <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
+                    <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
+                      {t.qa.answerTitle}
+                    </p>
+                    {item.status === 'loading' ? (
+                      <p className="text-sm leading-relaxed text-slate-400/70 animate-pulse">
+                        {t.qa.answerLoading}
+                      </p>
+                    ) : item.status === 'error' ? (
+                      <p className="text-sm leading-relaxed text-rose-200">{item.error ?? t.qa.errorFallback}</p>
+                    ) : item.answerError ? (
+                      <p className="text-sm leading-relaxed text-rose-200">{item.answerError}</p>
+                    ) : item.answer ? (
+                      <>
+                        <p className="text-sm leading-relaxed text-slate-100 whitespace-pre-line">{item.answer}</p>
+                        {(item.answerModel || item.answerProvider) && (
+                          <p className="mt-3 text-xs uppercase tracking-[0.35em] text-slate-500">
+                            {t.qa.answerModelLabel}:{' '}
+                            {[item.answerModel, item.answerProvider].filter(Boolean).join(' · ')}
+                          </p>
+                        )}
+                      </>
+                    ) : (
+                      <p className="text-sm leading-relaxed text-slate-300/80">{t.qa.answerEmpty}</p>
+                    )}
                   </div>
                   <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
                     <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">

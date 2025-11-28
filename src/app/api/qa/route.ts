@@ -1,6 +1,7 @@
 import { NextResponse } from "next/server";
 import { searchLibraryChunks } from "@/server/library/search";
 import { rerankChunks } from "@/server/rerank/cross-encoder";
+import { generateAnswerFromChunks } from "@/server/answers/generator";
 
 export const runtime = "nodejs";
 
@@ -34,7 +35,20 @@ export async function POST(request: Request) {
       limit: 3,
     });
 
-    return NextResponse.json({ results });
+    let answer: Awaited<ReturnType<typeof generateAnswerFromChunks>> | null = null;
+    let answerError: string | undefined;
+
+    try {
+      answer = await generateAnswerFromChunks(question, results);
+    } catch (error) {
+      console.error("Failed to generate answer", error);
+      answerError =
+        error instanceof Error
+          ? error.message
+          : "Failed to generate answer using the configured model.";
+    }
+
+    return NextResponse.json({ results, answer, answerError: answerError ?? null });
   } catch (error) {
     console.error("Failed to search library chunks", error);
     const message =
