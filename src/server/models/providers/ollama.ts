@@ -34,6 +34,7 @@ export const callOllama = async (
       model: OLLAMA_MODEL,
       prompt,
       stream: false,
+      think: false,
       options: {
         temperature: request.temperature ?? 0.2,
         num_predict: request.maxTokens ?? 512,

@@ -110,8 +110,6 @@ const normalizeAnswer = (answer?: ApiAnswer) => {
   return { text, provider, model };
 };
 
-const formatScore = (score: number) =>
-  (Number.isFinite(score) ? score : 0).toFixed(3);
 
 export default function Home() {
   const { t } = useLanguage();
@@ -289,48 +287,6 @@ export default function Home() {
                       </>
                     ) : (
                       <p className="text-sm leading-relaxed text-slate-300/80">{t.qa.answerEmpty}</p>
-                    )}
-                  </div>
-                  <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
-                    <p className="mb-3 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
-                      {t.qa.resultsTitle}
-                    </p>
-                    {item.status === 'loading' ? (
-                      <p className="text-sm leading-relaxed text-slate-400/70 animate-pulse">
-                        {t.qa.processing}
-                      </p>
-                    ) : item.status === 'error' ? (
-                      <p className="text-sm leading-relaxed text-rose-200">
-                        {item.error ?? t.qa.errorFallback}
-                      </p>
-                    ) : item.results.length === 0 ? (
-                      <p className="text-sm leading-relaxed text-slate-300/80">{t.qa.resultsEmpty}</p>
-                    ) : (
-                      <ul className="space-y-3">
-                        {item.results.map((result) => (
-                          <li
-                            key={result.id}
-                            className="rounded-2xl border border-white/5 bg-slate-900/70 p-4 shadow-inner shadow-black/20"
-                          >
-                            <div className="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-                              <span className="font-semibold uppercase tracking-[0.25em] text-purple-200/90">
-                                {result.documentName ?? t.qa.unknownDocument}
-                              </span>
-                              <span className="text-[11px]">
-                                {t.qa.scoreLabel}: {formatScore(result.score)}
-                              </span>
-                            </div>
-                            {result.chunkIndex !== null && (
-                              <p className="mt-1 text-[11px] uppercase tracking-[0.35em] text-slate-500">
-                                {t.qa.chunkLabel} {result.chunkIndex + 1}
-                              </p>
-                            )}
-                            <p className="mt-2 text-sm leading-relaxed text-slate-100">
-                              {result.content || t.qa.emptyChunk}
-                            </p>
-                          </li>
-                        ))}
-                      </ul>
                     )}
                   </div>
                 </article>
