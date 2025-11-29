@@ -4,7 +4,7 @@ import { FormEvent, useState } from 'react';
 import { useLanguage } from '@/components/language-provider';
 import { Select } from '@/components/select';
 
-const MODEL_ORDER = ['llama', 'qwen', 'gemma', 'local'] as const;
+const MODEL_ORDER = ['llama', 'qwen', 'gemma', 'ollama'] as const;
 
 type ModelKey = (typeof MODEL_ORDER)[number];
 
@@ -14,11 +14,16 @@ export default function SettingsPage() {
   const [apiKey, setApiKey] = useState('');
   const [chunkSize, setChunkSize] = useState(800);
   const [feedback, setFeedback] = useState<string | null>(null);
+  const [ollamaHost, setOllamaHost] = useState('127.0.0.1');
+  const [ollamaPort, setOllamaPort] = useState('11434');
+  const [ollamaModel, setOllamaModel] = useState('gpt-oss:20b');
 
   const modelOptions = MODEL_ORDER.map((key) => ({
     value: key,
     label: t.settings.models[key],
   }));
+
+  const showOllamaFields = selectedModel === 'ollama';
 
   const handleSubmit = (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -47,7 +52,11 @@ export default function SettingsPage() {
             />
           </label>
 
-          <label className="block space-y-2 text-sm text-slate-200/90">
+          <label
+            className={`block space-y-2 text-sm text-slate-200/90 ${
+              showOllamaFields ? 'opacity-60' : ''
+            }`}
+          >
             <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
               {t.settings.apiLabel}
             </span>
@@ -56,6 +65,7 @@ export default function SettingsPage() {
               value={apiKey}
               onChange={(event) => setApiKey(event.target.value)}
               placeholder={t.settings.apiPlaceholder}
+              disabled={showOllamaFields}
               className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
             />
           </label>
@@ -75,6 +85,55 @@ export default function SettingsPage() {
             />
             <span className="block text-xs text-slate-300/75">{t.settings.chunksHelper}</span>
           </label>
+
+          {showOllamaFields && (
+            <div className="space-y-4 rounded-2xl border border-dashed border-violet-400/40 bg-violet-500/5 p-4">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-200/80">
+                {t.settings.ollamaConfig.title}
+              </p>
+
+              <label className="block space-y-2 text-sm text-slate-200/90">
+                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+                  {t.settings.ollamaConfig.hostLabel}
+                </span>
+                <input
+                  type="text"
+                  value={ollamaHost}
+                  onChange={(event) => setOllamaHost(event.target.value)}
+                  placeholder={t.settings.ollamaConfig.hostPlaceholder}
+                  className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-200/90">
+                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+                  {t.settings.ollamaConfig.portLabel}
+                </span>
+                <input
+                  type="text"
+                  inputMode="numeric"
+                  value={ollamaPort}
+                  onChange={(event) => setOllamaPort(event.target.value)}
+                  placeholder={t.settings.ollamaConfig.portPlaceholder}
+                  className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+                />
+              </label>
+
+              <label className="block space-y-2 text-sm text-slate-200/90">
+                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+                  {t.settings.ollamaConfig.modelLabel}
+                </span>
+                <input
+                  type="text"
+                  value={ollamaModel}
+                  onChange={(event) => setOllamaModel(event.target.value)}
+                  placeholder={t.settings.ollamaConfig.modelPlaceholder}
+                  className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+                />
+                <span className="block text-xs text-slate-300/75">{t.settings.ollamaConfig.helper}</span>
+              </label>
+            </div>
+          )}
         </div>
 
         <div className="space-y-5 rounded-[28px] border border-white/10 bg-slate-950/60 p-6">

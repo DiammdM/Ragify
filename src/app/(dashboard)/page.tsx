@@ -1,7 +1,7 @@
-'use client';
+"use client";
 
-import { FormEvent, useMemo, useState } from 'react';
-import { useLanguage } from '@/components/language-provider';
+import { FormEvent, useMemo, useState } from "react";
+import { useLanguage } from "@/components/language-provider";
 
 type ChunkResult = {
   id: string;
@@ -14,7 +14,7 @@ type ChunkResult = {
   crossScore?: number | null;
 };
 
-type InteractionStatus = 'loading' | 'ready' | 'error';
+type InteractionStatus = "loading" | "ready" | "error";
 
 type Interaction = {
   id: string;
@@ -49,26 +49,26 @@ type ApiResponse = {
 };
 
 const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
-  id: typeof result.id === 'string' ? result.id : fallbackId,
-  content: typeof result.content === 'string' ? result.content.trim() : '',
+  id: typeof result.id === "string" ? result.id : fallbackId,
+  content: typeof result.content === "string" ? result.content.trim() : "",
   documentName:
-    typeof result.documentName === 'string' ? result.documentName : null,
-  documentId:
-    typeof result.documentId === 'string' ? result.documentId : null,
+    typeof result.documentName === "string" ? result.documentName : null,
+  documentId: typeof result.documentId === "string" ? result.documentId : null,
   chunkIndex:
-    typeof result.chunkIndex === 'number' && Number.isFinite(result.chunkIndex)
+    typeof result.chunkIndex === "number" && Number.isFinite(result.chunkIndex)
       ? result.chunkIndex
       : null,
   score:
-    typeof result.score === 'number' && Number.isFinite(result.score)
+    typeof result.score === "number" && Number.isFinite(result.score)
       ? result.score
       : 0,
   vectorScore:
-    typeof result.vectorScore === 'number' && Number.isFinite(result.vectorScore)
+    typeof result.vectorScore === "number" &&
+    Number.isFinite(result.vectorScore)
       ? result.vectorScore
       : null,
   crossScore:
-    typeof result.crossScore === 'number' && Number.isFinite(result.crossScore)
+    typeof result.crossScore === "number" && Number.isFinite(result.crossScore)
       ? result.crossScore
       : null,
 });
@@ -84,22 +84,22 @@ const normalizeResults = (results?: ApiResult[]) => {
 };
 
 const normalizeAnswer = (answer?: ApiAnswer) => {
-  if (!answer || typeof answer !== 'object') {
+  if (!answer || typeof answer !== "object") {
     return null;
   }
 
   const text =
-    typeof answer.text === 'string' && answer.text.trim().length > 0
+    typeof answer.text === "string" && answer.text.trim().length > 0
       ? answer.text.trim()
-      : '';
+      : "";
 
   const provider =
-    typeof answer.provider === 'string' && answer.provider.length > 0
+    typeof answer.provider === "string" && answer.provider.length > 0
       ? answer.provider
       : null;
 
   const model =
-    typeof answer.model === 'string' && answer.model.length > 0
+    typeof answer.model === "string" && answer.model.length > 0
       ? answer.model
       : null;
 
@@ -110,10 +110,9 @@ const normalizeAnswer = (answer?: ApiAnswer) => {
   return { text, provider, model };
 };
 
-
 export default function Home() {
   const { t } = useLanguage();
-  const [question, setQuestion] = useState('');
+  const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<Interaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
 
@@ -134,17 +133,17 @@ export default function Home() {
         id: pendingId,
         question: trimmed,
         results: [],
-        status: 'loading',
+        status: "loading",
       },
     ]);
-    setQuestion('');
+    setQuestion("");
     setIsLoading(true);
 
     try {
-      const response = await fetch('/api/qa', {
-        method: 'POST',
+      const response = await fetch("/api/qa", {
+        method: "POST",
         headers: {
-          'Content-Type': 'application/json',
+          "Content-Type": "application/json",
         },
         body: JSON.stringify({ question: trimmed }),
       });
@@ -152,7 +151,7 @@ export default function Home() {
       const data: ApiResponse = await response.json();
       if (!response.ok) {
         const message =
-          typeof data.error === 'string' && data.error
+          typeof data.error === "string" && data.error
             ? data.error
             : t.qa.errorFallback;
         throw new Error(message);
@@ -161,7 +160,7 @@ export default function Home() {
       const matches = normalizeResults(data.results);
       const answerPayload = normalizeAnswer(data.answer);
       const answerError =
-        typeof data.answerError === 'string' && data.answerError.length > 0
+        typeof data.answerError === "string" && data.answerError.length > 0
           ? data.answerError
           : null;
       setHistory((prev) =>
@@ -170,17 +169,17 @@ export default function Home() {
             ? {
                 ...item,
                 results: matches,
-                answer: answerPayload?.text ?? '',
+                answer: answerPayload?.text ?? "",
                 answerProvider: answerPayload?.provider ?? null,
                 answerModel: answerPayload?.model ?? null,
                 answerError,
-                status: 'ready',
+                status: "ready",
               }
             : item
         )
       );
     } catch (error) {
-      console.error('Failed to query knowledge base', error);
+      console.error("Failed to query knowledge base", error);
       const message =
         error instanceof Error ? error.message : t.qa.errorFallback;
       setHistory((prev) =>
@@ -188,7 +187,7 @@ export default function Home() {
           item.id === pendingId
             ? {
                 ...item,
-                status: 'error',
+                status: "error",
                 error: message,
               }
             : item
@@ -204,8 +203,12 @@ export default function Home() {
       <div className="rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
         <div className="flex flex-col gap-6 pb-8">
           <div>
-            <h2 className="text-2xl font-semibold text-white sm:text-3xl">{t.qa.title}</h2>
-            <p className="mt-2 text-base text-slate-200/80 sm:text-lg">{t.qa.subtitle}</p>
+            <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+              {t.qa.title}
+            </h2>
+            <p className="mt-2 text-base text-slate-200/80 sm:text-lg">
+              {t.qa.subtitle}
+            </p>
           </div>
           <form className="flex flex-col gap-5" onSubmit={handleSubmit}>
             <label className="flex flex-col gap-3">
@@ -260,33 +263,47 @@ export default function Home() {
                   className="space-y-4 rounded-[28px] border border-white/10 bg-slate-950/70 p-6 shadow-inner shadow-slate-950/40"
                 >
                   <div>
-                    <p className="text-xs uppercase tracking-[0.3em] text-purple-200/80">{t.qa.ask}</p>
-                    <p className="mt-1 text-base text-white/90">{item.question}</p>
+                    <p className="text-xs uppercase tracking-[0.3em] text-purple-200/80">
+                      {t.qa.ask}
+                    </p>
+                    <p className="mt-1 text-base text-white/90">
+                      {item.question}
+                    </p>
                   </div>
                   <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
                     <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
                       {t.qa.answerTitle}
                     </p>
-                    {item.status === 'loading' ? (
+                    {item.status === "loading" ? (
                       <p className="text-sm leading-relaxed text-slate-400/70 animate-pulse">
                         {t.qa.answerLoading}
                       </p>
-                    ) : item.status === 'error' ? (
-                      <p className="text-sm leading-relaxed text-rose-200">{item.error ?? t.qa.errorFallback}</p>
+                    ) : item.status === "error" ? (
+                      <p className="text-sm leading-relaxed text-rose-200">
+                        {item.error ?? t.qa.errorFallback}
+                      </p>
                     ) : item.answerError ? (
-                      <p className="text-sm leading-relaxed text-rose-200">{item.answerError}</p>
+                      <p className="text-sm leading-relaxed text-rose-200">
+                        {item.answerError}
+                      </p>
                     ) : item.answer ? (
                       <>
-                        <p className="text-sm leading-relaxed text-slate-100 whitespace-pre-line">{item.answer}</p>
+                        <p className="text-sm leading-relaxed text-slate-100 whitespace-pre-line">
+                          {item.answer}
+                        </p>
                         {(item.answerModel || item.answerProvider) && (
                           <p className="mt-3 text-xs uppercase tracking-[0.35em] text-slate-500">
-                            {t.qa.answerModelLabel}:{' '}
-                            {[item.answerModel, item.answerProvider].filter(Boolean).join(' · ')}
+                            {t.qa.answerModelLabel}:{" "}
+                            {[item.answerModel, item.answerProvider]
+                              .filter(Boolean)
+                              .join(" · ")}
                           </p>
                         )}
                       </>
                     ) : (
-                      <p className="text-sm leading-relaxed text-slate-300/80">{t.qa.answerEmpty}</p>
+                      <p className="text-sm leading-relaxed text-slate-300/80">
+                        {t.qa.answerEmpty}
+                      </p>
                     )}
                   </div>
                 </article>
@@ -297,7 +314,9 @@ export default function Home() {
       </div>
       <aside className="flex flex-col gap-5 rounded-[32px] border border-white/10 bg-slate-900/50 p-7 shadow-2xl shadow-slate-950/30">
         <div className="rounded-[28px] border border-white/10 bg-slate-950/70 p-6">
-          <h3 className="text-base font-semibold text-white/90">{t.qa.samplesTitle}</h3>
+          <h3 className="text-base font-semibold text-white/90">
+            {t.qa.samplesTitle}
+          </h3>
           <p className="mt-3 text-sm text-slate-300/80">{t.qa.note}</p>
         </div>
         <div className="rounded-[28px] border border-dashed border-violet-400/40 bg-violet-500/10 p-6 text-sm text-violet-100">
