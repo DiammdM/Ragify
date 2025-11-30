@@ -1,8 +1,32 @@
 import type { GenerationRequest, GenerationResult } from "../types";
 
-const OLLAMA_BASE_URL =
-  process.env.OLLAMA_BASE_URL?.replace(/\/+$/, "") ?? "http://localhost:11434";
-const OLLAMA_MODEL = process.env.OLLAMA_MODEL ?? "llama3.1";
+const resolveOllamaBaseUrl = (request: GenerationRequest) => {
+  const host = request.settings?.ollamaHost?.trim();
+  const port = request.settings?.ollamaPort?.trim();
+
+  if (!host) {
+    throw new Error("Ollama host is not configured.");
+  }
+
+  const normalizedHost =
+    host.startsWith("http://") || host.startsWith("https://")
+      ? host
+      : `http://${host}`;
+
+  const url = new URL(normalizedHost);
+  if (port) {
+    url.port = port;
+  }
+  return url.toString().replace(/\/+$/, "");
+};
+
+const resolveOllamaModel = (request: GenerationRequest) => {
+  const model = request.settings?.ollamaModel?.trim();
+  if (!model) {
+    throw new Error("Ollama model is not configured.");
+  }
+  return model;
+};
 
 const joinMessages = (request: GenerationRequest) =>
   request.messages
@@ -24,14 +48,20 @@ const normalizeOllamaError = async (response: Response) => {
 export const callOllama = async (
   request: GenerationRequest
 ): Promise<GenerationResult> => {
+  if (!request.settings) {
+    throw new Error("Model settings are required for Ollama requests.");
+  }
+
+  const baseUrl = resolveOllamaBaseUrl(request);
+  const model = resolveOllamaModel(request);
   const prompt = joinMessages(request);
-  const response = await fetch(`${OLLAMA_BASE_URL}/api/generate`, {
+  const response = await fetch(`${baseUrl}/api/generate`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
     },
     body: JSON.stringify({
-      model: OLLAMA_MODEL,
+      model,
       prompt,
       stream: false,
       think: false,
@@ -58,6 +88,6 @@ export const callOllama = async (
   return {
     text,
     provider: "ollama",
-    model: OLLAMA_MODEL,
+    model,
   };
 };

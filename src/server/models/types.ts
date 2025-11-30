@@ -7,10 +7,20 @@ export type GenerationMessage = {
   content: string;
 };
 
+export type ModelSettings = {
+  modelKey: "llama" | "qwen" | "gemma" | "ollama";
+  apiKey?: string | null;
+  chunkSize?: number | null;
+  ollamaHost?: string | null;
+  ollamaPort?: string | null;
+  ollamaModel?: string | null;
+};
+
 export type GenerationRequest = {
   messages: GenerationMessage[];
   temperature?: number;
   maxTokens?: number;
+  settings?: ModelSettings | null;
 };
 
 export type GenerationResult = {

@@ -1,10 +1,6 @@
 import type { GenerationRequest, GenerationResult } from "../types";
 
-const OPENAI_API_KEY = process.env.OPENAI_API_KEY;
-const OPENAI_BASE_URL =
-  process.env.OPENAI_BASE_URL?.replace(/\/+$/, "") ?? "https://api.openai.com/v1";
-const OPENAI_MODEL =
-  process.env.OPENAI_MODEL ?? process.env.OPENAI_CHAT_MODEL ?? "gpt-4o-mini";
+const OPENAI_BASE_URL = "https://api.openai.com/v1";
 
 const toOpenAIMessages = (request: GenerationRequest) =>
   request.messages.map((message) => ({
@@ -25,20 +21,27 @@ const normalizeOpenAIError = async (response: Response) => {
 export const callOpenAI = async (
   request: GenerationRequest
 ): Promise<GenerationResult> => {
-  if (!OPENAI_API_KEY) {
-    throw new Error(
-      "OPENAI_API_KEY is not configured. Set it in the environment to enable answer generation."
-    );
+  const apiKey = request.settings?.apiKey?.trim();
+  if (!apiKey) {
+    throw new Error("API key is not configured for the selected model.");
+  }
+
+  const model =
+    request.settings?.ollamaModel?.trim() ||
+    request.settings?.modelKey?.trim();
+
+  if (!model) {
+    throw new Error("Model name is not configured for the selected provider.");
   }
 
   const response = await fetch(`${OPENAI_BASE_URL}/chat/completions`, {
     method: "POST",
     headers: {
       "Content-Type": "application/json",
-      Authorization: `Bearer ${OPENAI_API_KEY}`,
+      Authorization: `Bearer ${apiKey}`,
     },
     body: JSON.stringify({
-      model: OPENAI_MODEL,
+      model,
       messages: toOpenAIMessages(request),
       temperature: request.temperature ?? 0.2,
       max_tokens: request.maxTokens ?? 512,
@@ -66,6 +69,6 @@ export const callOpenAI = async (
   return {
     text,
     provider: "openai",
-    model: OPENAI_MODEL,
+    model,
   };
 };

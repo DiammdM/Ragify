@@ -1,6 +1,7 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { getSessionUserId } from "@/lib/auth/session";
+import { primeUserModelSettingsCache } from "@/server/models/user-settings";
 
 const MODEL_KEYS = ["llama", "qwen", "gemma", "ollama"] as const;
 type ModelKey = (typeof MODEL_KEYS)[number];
@@ -133,6 +134,8 @@ export async function POST(request: NextRequest) {
         ollamaModel: isOllama ? parsed.ollamaModel : null,
       },
     });
+
+    primeUserModelSettingsCache(userId, settings);
 
     return NextResponse.json({ settings });
   } catch (error) {

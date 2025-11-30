@@ -1,6 +1,6 @@
 import type { RetrievedChunk } from "../library/search";
 import { generateWithModel } from "../models/client";
-import type { GenerationMessage } from "../models/types";
+import type { GenerationMessage, ModelSettings } from "../models/types";
 
 export type AnswerPayload = {
   text: string;
@@ -46,7 +46,8 @@ const buildMessages = (question: string, chunks: RetrievedChunk[]): GenerationMe
 
 export const generateAnswerFromChunks = async (
   question: string,
-  chunks: RetrievedChunk[]
+  chunks: RetrievedChunk[],
+  options?: { settings?: ModelSettings | null }
 ): Promise<AnswerPayload> => {
   if (!chunks.length) {
     throw new Error("No sources available to generate an answer.");
@@ -57,6 +58,7 @@ export const generateAnswerFromChunks = async (
     messages,
     temperature: 0.2,
     maxTokens: 512,
+    settings: options?.settings ?? undefined,
   });
 
   return {
