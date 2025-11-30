@@ -20,6 +20,7 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map("createTime")
   updatedAt DateTime @updatedAt @map("updateTime")
+  modelSettings UserModelSettings?
 }
 
 model LibraryDocument {
@@ -35,4 +36,20 @@ model LibraryDocument {
   chunkCount Int      @default(0)
   lastIndexedAt DateTime?
   embeddingModel String?
+}
+
+model UserModelSettings {
+  id          String   @id @default(auto()) @map("_id") @db.ObjectId
+  userId      String   @db.ObjectId
+  user        User     @relation(fields: [userId], references: [id])
+  modelKey    String
+  apiKey      String?
+  chunkSize   Int
+  ollamaHost  String?
+  ollamaPort  String?
+  ollamaModel String?
+  createdAt   DateTime @default(now()) @map("createTime")
+  updatedAt   DateTime @updatedAt @map("updateTime")
+
+  @@unique([userId])
 }

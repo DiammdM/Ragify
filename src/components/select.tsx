@@ -17,6 +17,7 @@ interface SelectProps<T extends string> {
   listClassName?: string;
   optionClassName?: string;
   ariaLabel?: string;
+  disabled?: boolean;
 }
 
 export function Select<T extends string>({
@@ -28,6 +29,7 @@ export function Select<T extends string>({
   listClassName,
   optionClassName,
   ariaLabel,
+  disabled = false,
 }: SelectProps<T>) {
   const [open, setOpen] = useState(false);
   const containerRef = useRef<HTMLDivElement | null>(null);
@@ -72,6 +74,12 @@ export function Select<T extends string>({
     }
   }, [value]);
 
+  useEffect(() => {
+    if (disabled) {
+      setOpen(false);
+    }
+  }, [disabled]);
+
   return (
     <div ref={containerRef} className="relative">
       <button
@@ -79,10 +87,15 @@ export function Select<T extends string>({
         aria-haspopup="listbox"
         aria-expanded={open}
         aria-label={ariaLabel}
-        className={`flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 transition focus:outline-none focus-visible:border-violet-300/70 focus-visible:shadow-violet-500/40 ${
+        aria-disabled={disabled}
+        disabled={disabled}
+        className={`flex w-full items-center justify-between rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 transition focus:outline-none focus-visible:border-violet-300/70 focus-visible:shadow-violet-500/40 disabled:cursor-not-allowed disabled:opacity-60 ${
           triggerClassName ?? ''
         }`}
-        onClick={() => setOpen((current) => !current)}
+        onClick={() => {
+          if (disabled) return;
+          setOpen((current) => !current);
+        }}
       >
         <span className="truncate whitespace-nowrap text-left text-white/90">
           {selected?.label ?? placeholder ?? ''}

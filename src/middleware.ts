@@ -3,6 +3,7 @@ import { NextRequest, NextResponse } from "next/server";
 const PUBLIC_ROUTES = new Set(["/login", "/register"]);
 
 export function middleware(request: NextRequest) {
+  console.log("middleware hit.....................");
   const pathname = request.nextUrl.pathname;
 
   if (pathname.startsWith("/api") || pathname.startsWith("/_next")) {

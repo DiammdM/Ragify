@@ -21,3 +21,22 @@ export const attachSessionCookie = (
 
   return response;
 };
+
+export const getSessionUserId = (cookies: { get: (key: string) => { value?: string } | undefined }) => {
+  const session = cookies.get(SESSION_COOKIE);
+  return session?.value ?? null;
+};
+
+export const clearSessionCookie = (response: NextResponse) => {
+  response.cookies.set({
+    name: SESSION_COOKIE,
+    value: "",
+    httpOnly: true,
+    sameSite: "lax",
+    secure: isProduction,
+    maxAge: 0,
+    path: "/",
+  });
+
+  return response;
+};

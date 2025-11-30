@@ -23,6 +23,8 @@ const translations = {
         en: "English",
         zh: "简体中文",
       },
+      logout: "Log out",
+      loggingOut: "Logging out...",
     },
     nav: {
       qa: "Q&A",
@@ -123,7 +125,10 @@ const translations = {
       },
       languageLabel: "Interface language",
       save: "Save changes",
-      saved: "Settings saved locally.",
+      saving: "Saving...",
+      saved: "Settings saved.",
+      saveError: "Failed to save settings.",
+      loadError: "Failed to load settings.",
       languageOptions: {
         en: "English",
         zh: "简体中文",
@@ -170,6 +175,8 @@ const translations = {
         en: "English",
         zh: "简体中文",
       },
+      logout: "退出登录",
+      loggingOut: "正在退出...",
     },
     nav: {
       qa: "问答",
@@ -267,7 +274,10 @@ const translations = {
       },
       languageLabel: "界面语言",
       save: "保存设置",
-      saved: "设置已保存在本地。",
+      saving: "保存中...",
+      saved: "设置已保存。",
+      saveError: "保存失败，请稍后重试。",
+      loadError: "加载设置失败，请稍后重试。",
       languageOptions: {
         en: "English",
         zh: "简体中文",

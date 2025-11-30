@@ -1,14 +1,16 @@
 'use client';
 
 import Link from 'next/link';
-import { usePathname } from 'next/navigation';
-import { PropsWithChildren, useMemo } from 'react';
+import { usePathname, useRouter } from 'next/navigation';
+import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
 import { Language, useLanguage } from './language-provider';
 import { Select } from './select';
 
 export function AppShell({ children }: PropsWithChildren) {
   const { t, language, setLanguage } = useLanguage();
   const pathname = usePathname();
+  const router = useRouter();
+  const [isLoggingOut, setIsLoggingOut] = useState(false);
 
   const navItems = useMemo(
     () => [
@@ -27,6 +29,25 @@ export function AppShell({ children }: PropsWithChildren) {
     [t]
   );
 
+  const handleLogout = useCallback(async () => {
+    if (isLoggingOut) {
+      return;
+    }
+    setIsLoggingOut(true);
+    try {
+      const response = await fetch('/api/auth/logout', { method: 'POST' });
+      if (!response.ok) {
+        console.error('Failed to log out', await response.text());
+      }
+      router.push('/login');
+      router.refresh();
+    } catch (error) {
+      console.error('Failed to log out', error);
+    } finally {
+      setIsLoggingOut(false);
+    }
+  }, [isLoggingOut, router]);
+
   return (
     <div className="relative min-h-screen bg-slate-950 text-slate-100">
       <div
@@ -41,7 +62,7 @@ export function AppShell({ children }: PropsWithChildren) {
               {t.layout.tagline}
             </p>
           </div>
-          <div className="flex w-[70px] items-center gap-3">
+          <div className="flex items-center justify-end gap-3">
             <Select
               value={language}
               options={languageOptions}
@@ -51,6 +72,14 @@ export function AppShell({ children }: PropsWithChildren) {
               listClassName="min-w-[120px]"
               optionClassName="!flex-row !items-center whitespace-nowrap"
             />
+            <button
+              type="button"
+              onClick={handleLogout}
+              disabled={isLoggingOut}
+              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-400 to-violet-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/30 transition hover:brightness-110 disabled:opacity-70 disabled:brightness-100"
+            >
+              {isLoggingOut ? t.layout.loggingOut : t.layout.logout}
+            </button>
           </div>
         </header>
         <div className="grid flex-1 gap-10 lg:grid-cols-[260px_1fr]">
