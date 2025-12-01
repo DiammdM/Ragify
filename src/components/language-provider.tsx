@@ -28,6 +28,7 @@ const translations = {
     },
     nav: {
       qa: "Q&A",
+      chat: "Chat",
       library: "Knowledge Library",
       settings: "Settings",
     },
@@ -58,6 +59,29 @@ const translations = {
       ],
       historyLabel: "Conversation history",
       note: "Tip: tune chunk size and model in Settings after indexing documents.",
+    },
+    chat: {
+      title: "Chat Console",
+      subtitle:
+        "Have multi-turn conversations grounded in your indexed knowledge.",
+      placeholder: "Ask or follow up using your documents...",
+      inputLabel: "Chat input",
+      send: "Send",
+      sending: "Sending...",
+      clear: "Clear chat",
+      emptyState: "No messages yet. Start chatting to see contextual answers.",
+      answerFallback: "No answer available yet.",
+      answerError: "Unable to generate a response right now.",
+      referencesTitle: "Sources used",
+      referencesHint:
+        "The latest assistant reply cites up to three chunks for grounding.",
+      referencesEmpty: "Send a message to surface cited sources here.",
+      note: "Each reply retrieves with the latest turn and keeps recent context within token limits.",
+      quickPrompts: [
+        "What changed in the latest policy update?",
+        "Summarize recent support escalations.",
+        "Draft a response for a customer asking about onboarding.",
+      ],
     },
     library: {
       title: "Knowledge Library",
@@ -180,6 +204,7 @@ const translations = {
     },
     nav: {
       qa: "问答",
+      chat: "聊天",
       library: "资料管理",
       settings: "设置",
     },
@@ -209,6 +234,27 @@ const translations = {
       ],
       historyLabel: "会话记录",
       note: "提示：完成资料索引后，可在设置中调整分片大小和模型。",
+    },
+    chat: {
+      title: "聊天对话",
+      subtitle: "基于已索引的资料进行多轮问答。",
+      placeholder: "输入问题或追问，引用知识库内容……",
+      inputLabel: "对话输入",
+      send: "发送",
+      sending: "发送中...",
+      clear: "清空对话",
+      emptyState: "还没有消息，先说点什么吧。",
+      answerFallback: "暂时没有可用的回答。",
+      answerError: "生成回答失败，请稍后重试。",
+      referencesTitle: "引用来源",
+      referencesHint: "助手会在回复中引用最多 3 个分片。",
+      referencesEmpty: "发送消息后，会在此看到引用内容。",
+      note: "每次回复会用最新一轮检索，并在上下文长度内保留近期对话。",
+      quickPrompts: [
+        "最新的政策更新有哪些变化？",
+        "最近的支持升级情况如何？",
+        "为客户的入门问题写一份回复。",
+      ],
     },
     library: {
       title: "资料管理",

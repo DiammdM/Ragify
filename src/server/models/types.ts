@@ -1,6 +1,6 @@
 export type ModelProvider = "openai" | "ollama";
 
-export type GenerationMessageRole = "system" | "user";
+export type GenerationMessageRole = "system" | "user" | "assistant";
 
 export type GenerationMessage = {
   role: GenerationMessageRole;

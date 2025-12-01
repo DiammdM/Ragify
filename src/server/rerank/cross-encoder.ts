@@ -332,6 +332,7 @@ export async function rerankChunks(
   const { tokenizer, model } = await getCrossEncoderResources();
   const limit = clampLimit(options?.limit);
   const scored: RetrievedChunk[] = [];
+  const scoredById = new Map<string, RetrievedChunk>();
 
   for (const chunk of chunks) {
     const content = chunk.content ?? "";
@@ -345,16 +346,24 @@ export async function rerankChunks(
       const output = await model(inputs);
       const score = toRerankScore(output.logits);
 
-      scored.push({
+      const scoredChunk = {
         ...chunk,
         crossScore: score,
-      });
+      };
+
+      scored.push(scoredChunk);
+      scoredById.set(scoredChunk.id, scoredChunk);
     } catch (error) {
       throw wrapCrossEncoderError(error);
     }
   }
 
-  const reranked = combineScores(scored).slice(
+  const combined = combineScores(scored);
+  const combinedById = new Map<string, RetrievedChunk>(
+    combined.map((chunk) => [chunk.id, chunk])
+  );
+
+  const reranked = combined.slice(
     0,
     Math.min(limit, scored.length)
   );
@@ -371,7 +380,9 @@ export async function rerankChunks(
       return;
     }
 
-    final.push(chunk);
+    const enriched =
+      combinedById.get(chunk.id) ?? scoredById.get(chunk.id) ?? chunk;
+    final.push(enriched);
     seen.add(chunk.id);
   };
 

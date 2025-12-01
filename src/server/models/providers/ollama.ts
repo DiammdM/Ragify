@@ -31,7 +31,12 @@ const resolveOllamaModel = (request: GenerationRequest) => {
 const joinMessages = (request: GenerationRequest) =>
   request.messages
     .map((message) => {
-      const prefix = message.role === "system" ? "System" : "User";
+      const prefix =
+        message.role === "system"
+          ? "System"
+          : message.role === "assistant"
+            ? "Assistant"
+            : "User";
       return `${prefix}:\n${message.content.trim()}`;
     })
     .join("\n\n");

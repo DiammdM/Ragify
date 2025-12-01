@@ -19,6 +19,7 @@ export function AppShell({ children }: PropsWithChildren) {
   const navItems = useMemo(
     () => [
       { href: '/', label: t.nav.qa },
+      { href: '/chat', label: t.nav.chat },
       { href: '/library', label: t.nav.library },
       { href: '/settings', label: t.nav.settings },
     ],
