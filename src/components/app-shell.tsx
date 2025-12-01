@@ -3,15 +3,8 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
-import { Moon, Sun } from 'lucide-react';
+import { Languages, Moon, Sun } from 'lucide-react';
 import { Button } from '@/components/ui/button';
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-  SelectValue,
-} from '@/components/ui/select';
 import { Language, useLanguage } from './language-provider';
 import { useTheme } from './theme-provider';
 
@@ -28,14 +21,6 @@ export function AppShell({ children }: PropsWithChildren) {
       { href: '/', label: t.nav.qa },
       { href: '/library', label: t.nav.library },
       { href: '/settings', label: t.nav.settings },
-    ],
-    [t]
-  );
-
-  const languageOptions = useMemo(
-    () => [
-      { value: 'en' as Language, label: t.layout.language.en },
-      { value: 'zh' as Language, label: t.layout.language.zh },
     ],
     [t]
   );
@@ -58,6 +43,10 @@ export function AppShell({ children }: PropsWithChildren) {
       setIsLoggingOut(false);
     }
   }, [isLoggingOut, router]);
+
+  const toggleLanguage = useCallback(() => {
+    setLanguage(language === 'en' ? ('zh' as Language) : ('en' as Language));
+  }, [language, setLanguage]);
 
   return (
     <div
@@ -82,30 +71,20 @@ export function AppShell({ children }: PropsWithChildren) {
             </p>
           </div>
           <div className="flex items-center justify-end gap-3">
-            <Select
-              value={language}
-              onValueChange={(value) => setLanguage(value as Language)}
-              disabled={isLoggingOut}
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={toggleLanguage}
+              className="inline-flex h-10 items-center justify-center gap-2 rounded-full border border-white/10 bg-white/10 px-4 text-white/80 transition hover:border-violet-300/60 hover:text-white"
+              aria-label={t.layout.language.label}
+              aria-pressed={language === 'zh'}
+              title={language === 'en' ? t.layout.language.zh : t.layout.language.en}
             >
-              <SelectTrigger
-                aria-label={t.layout.language.label}
-                size="sm"
-                className="min-w-[120px] rounded-lg border-white/10 bg-slate-900/70 text-white/90 shadow-inner shadow-violet-500/20 data-[placeholder]:text-white/70"
-              >
-                <SelectValue placeholder={t.layout.language.label} />
-              </SelectTrigger>
-              <SelectContent className="min-w-[140px] border-white/10 bg-slate-950/95 text-white">
-                {languageOptions.map((option) => (
-                  <SelectItem
-                    key={option.value}
-                    value={option.value}
-                    className="text-sm text-white/90"
-                  >
-                    {option.label}
-                  </SelectItem>
-                ))}
-              </SelectContent>
-            </Select>
+              <Languages className="size-4" />
+              <span className="text-xs font-semibold tracking-wide">
+                {language === 'en' ? 'EN' : '中'}
+              </span>
+            </Button>
             <Button
               type="button"
               variant="ghost"
