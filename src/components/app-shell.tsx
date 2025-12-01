@@ -3,11 +3,22 @@
 import Link from 'next/link';
 import { usePathname, useRouter } from 'next/navigation';
 import { PropsWithChildren, useCallback, useMemo, useState } from 'react';
+import { Moon, Sun } from 'lucide-react';
+import { Button } from '@/components/ui/button';
+import {
+  Select,
+  SelectContent,
+  SelectItem,
+  SelectTrigger,
+  SelectValue,
+} from '@/components/ui/select';
 import { Language, useLanguage } from './language-provider';
-import { Select } from './select';
+import { useTheme } from './theme-provider';
 
 export function AppShell({ children }: PropsWithChildren) {
   const { t, language, setLanguage } = useLanguage();
+  const { theme, toggleTheme } = useTheme();
+  const isLight = theme === 'light';
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
@@ -49,9 +60,17 @@ export function AppShell({ children }: PropsWithChildren) {
   }, [isLoggingOut, router]);
 
   return (
-    <div className="relative min-h-screen bg-slate-950 text-slate-100">
+    <div
+      className={`relative min-h-screen transition-colors ${
+        isLight ? 'bg-white text-slate-900' : 'bg-slate-950 text-slate-100'
+      }`}
+    >
       <div
-        className="pointer-events-none absolute inset-0 -z-10 bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.32),_rgba(2,6,23,0.95))]"
+        className={`pointer-events-none absolute inset-0 -z-10 transition-colors ${
+          isLight
+            ? 'bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.12),_rgba(255,255,255,0.95))]'
+            : 'bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.32),_rgba(2,6,23,0.95))]'
+        }`}
         aria-hidden
       />
       <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-8 py-10">
@@ -65,21 +84,47 @@ export function AppShell({ children }: PropsWithChildren) {
           <div className="flex items-center justify-end gap-3">
             <Select
               value={language}
-              options={languageOptions}
-              onChange={setLanguage}
-              ariaLabel={t.layout.language.label}
-              triggerClassName="whitespace-nowrap px-2"
-              listClassName="min-w-[120px]"
-              optionClassName="!flex-row !items-center whitespace-nowrap"
-            />
-            <button
+              onValueChange={(value) => setLanguage(value as Language)}
+              disabled={isLoggingOut}
+            >
+              <SelectTrigger
+                aria-label={t.layout.language.label}
+                size="sm"
+                className="min-w-[120px] rounded-lg border-white/10 bg-slate-900/70 text-white/90 shadow-inner shadow-violet-500/20 data-[placeholder]:text-white/70"
+              >
+                <SelectValue placeholder={t.layout.language.label} />
+              </SelectTrigger>
+              <SelectContent className="min-w-[140px] border-white/10 bg-slate-950/95 text-white">
+                {languageOptions.map((option) => (
+                  <SelectItem
+                    key={option.value}
+                    value={option.value}
+                    className="text-sm text-white/90"
+                  >
+                    {option.label}
+                  </SelectItem>
+                ))}
+              </SelectContent>
+            </Select>
+            <Button
+              type="button"
+              variant="ghost"
+              onClick={toggleTheme}
+              className="inline-flex size-10 items-center justify-center rounded-full border border-white/10 bg-white/10 text-white/80 transition hover:border-violet-300/60 hover:text-white"
+              aria-label="Toggle theme"
+            >
+              {theme === 'light' ? <Sun className="size-5" /> : <Moon className="size-5" />}
+            </Button>
+            <Button
               type="button"
               onClick={handleLogout}
               disabled={isLoggingOut}
-              className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-indigo-400 to-violet-500 px-4 py-2 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/30 transition hover:brightness-110 disabled:opacity-70 disabled:brightness-100"
+              variant="cta"
+              size="pill-sm"
+              className="font-semibold"
             >
               {isLoggingOut ? t.layout.loggingOut : t.layout.logout}
-            </button>
+            </Button>
           </div>
         </header>
         <div className="grid flex-1 gap-10 lg:grid-cols-[260px_1fr]">

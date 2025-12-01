@@ -6,6 +6,7 @@ import {
   ALLOWED_FILE_EXTENSION_SET,
 } from "@/lib/library/file-types";
 import { useLanguage } from "@/components/language-provider";
+import { Button } from "@/components/ui/button";
 
 type Status = "uploaded" | "indexing" | "indexed";
 type IndexingStage = "extracting" | "chunking" | "embedding" | "saving";
@@ -484,23 +485,26 @@ export default function LibraryPage() {
                   {dateFormatter.format(doc.updatedAt)}
                 </span>
                 <div className="flex gap-1.5 text-xs text-slate-200/80">
-                  <button
+                  <Button
                     type="button"
                     onClick={() => handleIndex(doc.id)}
                     disabled={
                       doc.status === "indexed" || doc.status === "indexing"
                     }
-                    className="rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                    size="sm"
+                    className="h-auto rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
                   >
                     {actionLabel}
-                  </button>
-                  <button
+                  </Button>
+                  <Button
                     type="button"
                     onClick={() => handleDelete(doc.id)}
-                    className="rounded-lg border border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-200 transition hover:border-red-400/40 hover:bg-red-500/15 hover:text-red-100"
+                    variant="outline"
+                    size="sm"
+                    className="h-auto rounded-lg border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-200 transition hover:border-red-400/40 hover:bg-red-500/15 hover:text-red-100"
                   >
                     {t.library.deleteAction}
-                  </button>
+                  </Button>
                 </div>
               </div>
               );

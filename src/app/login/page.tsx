@@ -4,6 +4,7 @@ import Link from 'next/link';
 import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/components/language-provider';
+import { Button } from '@/components/ui/button';
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -59,7 +60,7 @@ export default function LoginPage() {
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder={t.auth.form.namePlaceholder}
-            className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+            className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
           />
         </label>
 
@@ -72,20 +73,22 @@ export default function LoginPage() {
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder={t.auth.form.passwordPlaceholder}
-            className="w-full rounded-2xl border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+            className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
           />
         </label>
 
         {error && <p className="text-sm text-rose-300">{error}</p>}
 
         <div className="flex flex-col gap-3">
-          <button
+          <Button
             type="submit"
             disabled={isSubmitting}
-            className="inline-flex w-fit items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/40 transition hover:brightness-110 disabled:opacity-70"
+            variant="cta"
+            size="pill"
+            className="w-fit font-semibold"
           >
             {isSubmitting ? t.auth.form.submitting : t.auth.login.submit}
-          </button>
+          </Button>
           <p className="text-xs text-slate-300/80">
             {t.auth.login.switchPrompt}{' '}
             <Link href="/register" className="font-semibold text-violet-200 hover:text-white">

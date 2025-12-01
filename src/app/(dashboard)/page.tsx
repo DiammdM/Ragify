@@ -2,6 +2,7 @@
 
 import { FormEvent, useMemo, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
+import { Button } from "@/components/ui/button";
 
 type ChunkResult = {
   id: string;
@@ -221,29 +222,33 @@ export default function Home() {
                 className="w-full rounded-[28px] border border-white/10 bg-slate-950/70 p-5 text-base text-white shadow-inner shadow-violet-600/10 outline-none transition focus:border-violet-300/70 focus:bg-slate-950 focus:shadow-violet-500/30"
               />
             </label>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex max-w-xl flex-wrap gap-3">
-                {suggestions.map((item) => (
-                  <button
-                    key={item}
-                    type="button"
-                    onClick={() => setQuestion(item)}
-                    className="rounded-full border border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
-                  >
-                    {item}
-                  </button>
-                ))}
+              <div className="flex flex-wrap items-center justify-between gap-4">
+                <div className="flex max-w-xl flex-wrap gap-3">
+                  {suggestions.map((item) => (
+                    <Button
+                      key={item}
+                      type="button"
+                      variant="outline"
+                      size="sm"
+                      onClick={() => setQuestion(item)}
+                      className="h-auto rounded-full border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
+                    >
+                      {item}
+                    </Button>
+                  ))}
+                </div>
+                <Button
+                  type="submit"
+                  disabled={isLoading}
+                  variant="cta"
+                  size="pill"
+                  className="font-semibold"
+                >
+                  {isLoading ? t.qa.processing : t.qa.ask}
+                </Button>
               </div>
-              <button
-                type="submit"
-                disabled={isLoading}
-                className="inline-flex items-center justify-center rounded-full bg-gradient-to-r from-violet-500 to-indigo-500 px-6 py-2.5 text-sm font-semibold text-slate-950 shadow-lg shadow-violet-500/40 transition hover:brightness-110 disabled:cursor-not-allowed disabled:opacity-70"
-              >
-                {isLoading ? t.qa.processing : t.qa.ask}
-              </button>
-            </div>
-          </form>
-        </div>
+            </form>
+          </div>
         <div className="space-y-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
             <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-purple-200/90">
