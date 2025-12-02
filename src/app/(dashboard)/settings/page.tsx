@@ -147,15 +147,20 @@ export default function SettingsPage() {
   };
 
   return (
-    <section className="space-y-7 rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+    <section
+      className="flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur"
+      style={{ height: "min(794px, calc(100vh - 220px))" }}
+    >
       <header className="space-y-3">
         <h2 className="text-2xl font-semibold text-white sm:text-3xl">
           {t.settings.title}
         </h2>
-        <p className="text-base text-slate-200/80">{t.settings.subtitle}</p>
       </header>
 
-      <form className="grid gap-6 lg:grid-cols-2" onSubmit={handleSubmit}>
+      <form
+        className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 lg:grid-cols-2 lg:overflow-visible lg:pr-0"
+        onSubmit={handleSubmit}
+      >
         <div className="space-y-5 rounded-[28px] border border-white/10 bg-slate-950/60 p-6">
           <label className="block space-y-2 text-sm text-slate-200/90">
             <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">

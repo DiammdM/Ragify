@@ -99,7 +99,10 @@ export default function ChatPage() {
   const [isSending, setIsSending] = useState(false);
   const viewportRef = useRef<HTMLDivElement | null>(null);
 
-  const quickPrompts = useMemo(() => t.chat.quickPrompts, [t.chat.quickPrompts]);
+  const quickPrompts = useMemo(
+    () => t.chat.quickPrompts,
+    [t.chat.quickPrompts]
+  );
 
   useEffect(() => {
     const node = viewportRef.current;
@@ -205,14 +208,16 @@ export default function ChatPage() {
   };
 
   return (
-    <section className="flex flex-col gap-8">
-      <div className="flex flex-col gap-6 rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+    <section
+      className="flex flex-col overflow-hidden"
+      style={{ height: "min(794px, calc(100vh - 220px))" }}
+    >
+      <div className="flex h-full flex-col rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
             <h2 className="text-2xl font-semibold text-white sm:text-3xl">
               {t.chat.title}
             </h2>
-            <p className="text-base text-slate-200/80">{t.chat.subtitle}</p>
           </div>
           <Button
             type="button"
@@ -225,108 +230,110 @@ export default function ChatPage() {
           </Button>
         </div>
 
-        <div
-          ref={viewportRef}
-          className="scrollbar-dark flex flex-col gap-4 rounded-[28px] border border-white/10 bg-slate-950/60 p-5 max-h-[520px] overflow-y-auto"
-        >
-          {messages.length === 0 ? (
-            <div className="rounded-2xl border border-dashed border-white/10 bg-slate-900/50 p-6 text-sm text-slate-300/70">
-              {t.chat.emptyState}
-            </div>
-          ) : (
-            messages.map((message) => {
-              const isUser = message.role === "user";
-              const isLoading = message.status === "loading";
-              const isError = message.status === "error";
+        <div className="mt-6 grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-4">
+          <div
+            ref={viewportRef}
+            className="scrollbar-dark flex min-h-0 flex-col gap-4 overflow-y-auto rounded-[28px] border border-white/10 bg-slate-950/60 p-5"
+          >
+            {messages.length === 0 ? (
+              <div className="rounded-2xl border border-dashed border-white/10 bg-slate-900/50 p-6 text-sm text-slate-300/70">
+                {t.chat.emptyState}
+              </div>
+            ) : (
+              messages.map((message) => {
+                const isUser = message.role === "user";
+                const isLoading = message.status === "loading";
+                const isError = message.status === "error";
 
-              return (
-                <div
-                  key={message.id}
-                  className={`flex w-full ${
-                    isUser ? "justify-end" : "justify-start"
-                  }`}
-                >
+                return (
                   <div
-                    className={`max-w-[82%] rounded-3xl border px-5 py-4 shadow ${
-                      isUser
-                        ? "border-violet-300/60 bg-gradient-to-r from-violet-500 to-indigo-500 text-slate-950 shadow-violet-500/30"
-                        : "border-white/10 bg-slate-900/70 text-white/90 shadow-slate-950/30"
+                    key={message.id}
+                    className={`flex w-full ${
+                      isUser ? "justify-end" : "justify-start"
                     }`}
                   >
-                    <div className="text-sm whitespace-pre-line">
-                      {isLoading ? (
-                        <div className="flex items-center gap-1 text-white/80">
-                          {[0, 1, 2].map((index) => (
-                            <span
-                              key={index}
-                              className="inline-block size-2 rounded-full bg-white/70 animate-bounce"
-                              style={{ animationDelay: `${index * 120}ms` }}
-                            />
-                          ))}
-                        </div>
-                      ) : isError ? (
-                        message.error || t.chat.answerError
-                      ) : (
-                        message.content || t.chat.answerFallback
-                      )}
-                    </div>
-                    {!isUser && (
-                      <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-white/50">
-                        {isError ? (
-                          <span>{t.chat.answerError}</span>
+                    <div
+                      className={`max-w-[82%] rounded-xl border px-3 py-2 shadow ${
+                        isUser
+                          ? "border-violet-300/60 bg-gradient-to-r from-violet-500 to-indigo-500 text-slate-950 shadow-violet-500/30"
+                          : "border-white/10 bg-slate-900/70 text-white/90 shadow-slate-950/30"
+                      }`}
+                    >
+                      <div className="text-sm whitespace-pre-line">
+                        {isLoading ? (
+                          <div className="flex items-center gap-1 text-white/80">
+                            {[0, 1, 2].map((index) => (
+                              <span
+                                key={index}
+                                className="inline-block size-2 rounded-full bg-white/70 animate-bounce"
+                                style={{ animationDelay: `${index * 120}ms` }}
+                              />
+                            ))}
+                          </div>
+                        ) : isError ? (
+                          message.error || t.chat.answerError
                         ) : (
-                          <>
-                            {message.answerModel && (
-                              <span>{message.answerModel}</span>
-                            )}
-                            {message.answerProvider && (
-                              <span>{message.answerProvider}</span>
-                            )}
-                          </>
+                          message.content || t.chat.answerFallback
                         )}
                       </div>
-                    )}
+                      {!isUser && (
+                        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-white/50">
+                          {isError ? (
+                            <span>{t.chat.answerError}</span>
+                          ) : (
+                            <>
+                              {message.answerModel && (
+                                <span>{message.answerModel}</span>
+                              )}
+                              {message.answerProvider && (
+                                <span>{message.answerProvider}</span>
+                              )}
+                            </>
+                          )}
+                        </div>
+                      )}
+                    </div>
                   </div>
-                </div>
-              );
-            })
-          )}
-      </div>
+                );
+              })
+            )}
+          </div>
 
-        <form className="space-y-4" onSubmit={handleSubmit}>
-          <div className="flex flex-col gap-2 rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-violet-600/10">
-            <textarea
-              value={input}
-              onChange={(event) => setInput(event.target.value)}
-              onKeyDown={(event) => {
-                if (event.key === "Enter" && !event.shiftKey) {
-                  event.preventDefault();
-                  void submitMessage();
-                }
-              }}
-              placeholder={t.chat.placeholder}
-              rows={2}
-              className="w-full resize-none rounded-2xl border border-white/10 bg-slate-950/90 p-3 text-sm text-white shadow-inner shadow-violet-500/15 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
-              disabled={isSending}
-            />
-          </div>
-          <div className="flex flex-wrap items-center gap-2">
-            <div className="flex flex-wrap gap-2">
-              {quickPrompts.map((prompt) => (
-                <Button
-                  key={prompt}
-                  type="button"
-                  variant="outline"
-                  size="sm"
-                  onClick={() => setInput(prompt)}
-                  className="h-auto rounded-full border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
-                >
-                  {prompt}
-                </Button>
-              ))}
+          <form className="space-y-3" onSubmit={handleSubmit}>
+            <div className="flex flex-col gap-2 rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-violet-600/10">
+              <textarea
+                value={input}
+                onChange={(event) => setInput(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    void submitMessage();
+                  }
+                }}
+                placeholder={t.chat.placeholder}
+                rows={2}
+                className="w-full resize-none rounded-2xl border border-white/10 bg-slate-950/90 p-3 text-sm text-white shadow-inner shadow-violet-500/15 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+                disabled={isSending}
+              />
             </div>
-          </div>
-        </form>
+            <div className="flex flex-wrap items-center gap-2">
+              <div className="flex flex-wrap gap-2">
+                {quickPrompts.map((prompt) => (
+                  <Button
+                    key={prompt}
+                    type="button"
+                    variant="outline"
+                    size="sm"
+                    onClick={() => setInput(prompt)}
+                    className="h-auto rounded-full border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
+                  >
+                    {prompt}
+                  </Button>
+                ))}
+              </div>
+            </div>
+          </form>
+        </div>
       </div>
     </section>
   );

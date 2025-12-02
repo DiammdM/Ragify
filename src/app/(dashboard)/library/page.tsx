@@ -384,15 +384,15 @@ export default function LibraryPage() {
   };
 
   return (
-    <section className="space-y-7 rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+    <section
+      className="flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur"
+      style={{ height: "min(794px, calc(100vh - 220px))" }}
+    >
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-white sm:text-3xl">
             {t.library.title}
           </h2>
-          <p className="mt-1 text-base text-slate-200/80">
-            {t.library.subtitle}
-          </p>
         </div>
         <label
           className={`flex items-center gap-2 rounded-full border border-violet-300/60 bg-violet-500/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-violet-200/70 hover:bg-violet-500/30 ${
@@ -412,104 +412,108 @@ export default function LibraryPage() {
         </label>
       </header>
 
-      <div className="rounded-[28px] border border-dashed border-white/15 bg-slate-950/60 p-6 text-sm text-slate-200/80">
-        <p className="font-medium text-white/90">{t.library.dropLabel}</p>
-        <p className="mt-2 text-xs text-slate-300/70">{t.library.uploadHint}</p>
-      </div>
-
-      {message && (
-        <div
-          className={`rounded-[28px] px-5 py-3 text-sm ${
-            message.type === "error"
-              ? "border border-red-400/40 bg-red-500/10 text-red-100"
-              : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
-          }`}
-        >
-          {message.text}
+      <div className="scrollbar-dark flex-1 space-y-4 overflow-y-auto pr-1">
+        <div className="rounded-[28px] border border-dashed border-white/15 bg-slate-950/60 p-6 text-sm text-slate-200/80">
+          <p className="font-medium text-white/90">{t.library.dropLabel}</p>
+          <p className="mt-2 text-xs text-slate-300/70">
+            {t.library.uploadHint}
+          </p>
         </div>
-      )}
 
-      <div className="overflow-hidden rounded-[28px] border border-white/10">
-        <div className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] gap-4 border-b border-white/10 bg-slate-950/70 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300/80">
-          <span>{t.library.tableHeaders.name}</span>
-          <span>{t.library.tableHeaders.size}</span>
-          <span>{t.library.tableHeaders.status}</span>
-          <span>{t.library.tableHeaders.updated}</span>
-        </div>
-        <div className="divide-y divide-white/5 bg-slate-950/60">
-          {documents.length === 0 ? (
-            <div className="px-7 py-10 text-center text-sm text-slate-300/70">
-              {isLoading ? t.library.loading : t.library.emptyState}
-            </div>
-          ) : (
-            documents.map((doc) => {
-              const stageLabel =
-                doc.indexingStage && t.library.indexingStages[doc.indexingStage]
-                  ? t.library.indexingStages[doc.indexingStage]
-                  : null;
-              const isIndexing = doc.status === "indexing";
-              const progressLabel = isIndexing
-                ? ` (${doc.indexingProgress}%)`
-                : "";
-              const statusLabel = isIndexing
-                ? `${t.library.status.indexing}${
-                    stageLabel ? ` · ${stageLabel}` : ""
-                  }${progressLabel}`
-                : t.library.status[doc.status];
-              const actionLabel = isIndexing
-                ? `${stageLabel ?? t.library.status.indexing}${progressLabel}`
-                : t.library.indexAction;
+        {message && (
+          <div
+            className={`rounded-[28px] px-5 py-3 text-sm ${
+              message.type === "error"
+                ? "border border-red-400/40 bg-red-500/10 text-red-100"
+                : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+            }`}
+          >
+            {message.text}
+          </div>
+        )}
 
-              return (
-                <div
-                  key={doc.id}
-                  className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-white/90"
-                >
-                  <div className="min-w-0 space-y-1">
-                  <p className="truncate text-base font-semibold text-white">
-                    {doc.name}
-                  </p>
-                  <p className="text-xs text-slate-300/70">
-                    {t.library.chunkingNote}
-                  </p>
-                </div>
-                <span className="text-sm text-slate-200/80">{doc.size}</span>
-                <span
-                  className={`inline-flex min-w-[92px] items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold ${
-                    statusStyles[doc.status]
-                  }`}
-                >
-                  {statusLabel}
-                </span>
-                <span className="text-xs text-slate-200/80">
-                  {dateFormatter.format(doc.updatedAt)}
-                </span>
-                <div className="flex gap-1.5 text-xs text-slate-200/80">
-                  <Button
-                    type="button"
-                    onClick={() => handleIndex(doc.id)}
-                    disabled={
-                      doc.status === "indexed" || doc.status === "indexing"
-                    }
-                    size="sm"
-                    className="h-auto rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
-                  >
-                    {actionLabel}
-                  </Button>
-                  <Button
-                    type="button"
-                    onClick={() => handleDelete(doc.id)}
-                    variant="outline"
-                    size="sm"
-                    className="h-auto rounded-lg border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-200 transition hover:border-red-400/40 hover:bg-red-500/15 hover:text-red-100"
-                  >
-                    {t.library.deleteAction}
-                  </Button>
-                </div>
+        <div className="overflow-hidden rounded-[28px] border border-white/10">
+          <div className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] gap-4 border-b border-white/10 bg-slate-950/70 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300/80">
+            <span>{t.library.tableHeaders.name}</span>
+            <span>{t.library.tableHeaders.size}</span>
+            <span>{t.library.tableHeaders.status}</span>
+            <span>{t.library.tableHeaders.updated}</span>
+          </div>
+          <div className="divide-y divide-white/5 bg-slate-950/60">
+            {documents.length === 0 ? (
+              <div className="px-7 py-10 text-center text-sm text-slate-300/70">
+                {isLoading ? t.library.loading : t.library.emptyState}
               </div>
-              );
-            })
-          )}
+            ) : (
+              documents.map((doc) => {
+                const stageLabel =
+                  doc.indexingStage && t.library.indexingStages[doc.indexingStage]
+                    ? t.library.indexingStages[doc.indexingStage]
+                    : null;
+                const isIndexing = doc.status === "indexing";
+                const progressLabel = isIndexing
+                  ? ` (${doc.indexingProgress}%)`
+                  : "";
+                const statusLabel = isIndexing
+                  ? `${t.library.status.indexing}${
+                      stageLabel ? ` · ${stageLabel}` : ""
+                    }${progressLabel}`
+                  : t.library.status[doc.status];
+                const actionLabel = isIndexing
+                  ? `${stageLabel ?? t.library.status.indexing}${progressLabel}`
+                  : t.library.indexAction;
+
+                return (
+                  <div
+                    key={doc.id}
+                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-white/90"
+                  >
+                    <div className="min-w-0 space-y-1">
+                      <p className="truncate text-base font-semibold text-white">
+                        {doc.name}
+                      </p>
+                      <p className="text-xs text-slate-300/70">
+                        {t.library.chunkingNote}
+                      </p>
+                    </div>
+                    <span className="text-sm text-slate-200/80">{doc.size}</span>
+                    <span
+                      className={`inline-flex min-w-[92px] items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold ${
+                        statusStyles[doc.status]
+                      }`}
+                    >
+                      {statusLabel}
+                    </span>
+                    <span className="text-xs text-slate-200/80">
+                      {dateFormatter.format(doc.updatedAt)}
+                    </span>
+                    <div className="flex gap-1.5 text-xs text-slate-200/80">
+                      <Button
+                        type="button"
+                        onClick={() => handleIndex(doc.id)}
+                        disabled={
+                          doc.status === "indexed" || doc.status === "indexing"
+                        }
+                        size="sm"
+                        className="h-auto rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                      >
+                        {actionLabel}
+                      </Button>
+                      <Button
+                        type="button"
+                        onClick={() => handleDelete(doc.id)}
+                        variant="outline"
+                        size="sm"
+                        className="h-auto rounded-lg border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-200 transition hover:border-red-400/40 hover:bg-red-500/15 hover:text-red-100"
+                      >
+                        {t.library.deleteAction}
+                      </Button>
+                    </div>
+                  </div>
+                );
+              })
+            )}
+          </div>
         </div>
       </div>
     </section>
