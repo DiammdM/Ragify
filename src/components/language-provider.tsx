@@ -120,6 +120,12 @@ const translations = {
       dropLabel: "Drag & drop files or click to browse",
       chunkingNote: "Indexing splits files into embeddings-ready chunks.",
       indexSuccess: "Indexing complete.",
+      deleteDialog: {
+        title: "Delete document",
+        description: "This action cannot be undone.",
+        confirm: "Delete",
+        cancel: "Cancel",
+      },
     },
     settings: {
       title: "Settings",
@@ -292,6 +298,12 @@ const translations = {
       dropLabel: "拖拽文件到此处或点击选择",
       chunkingNote: "索引会将文件切分为适合向量化的分片。",
       indexSuccess: "索引完成。",
+      deleteDialog: {
+        title: "删除资料",
+        description: "此操作无法撤销。",
+        confirm: "删除",
+        cancel: "取消",
+      },
     },
     settings: {
       title: "系统设置",

@@ -209,13 +209,13 @@ export default function ChatPage() {
 
   return (
     <section
-      className="flex flex-col overflow-hidden"
+      className="flex flex-col overflow-hidden shadow-xl shadow-slate-900/10 backdrop-blur rounded-[32px]"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
-      <div className="flex h-full flex-col rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+      <div className="flex h-full flex-col rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
-            <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+            <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
               {t.chat.title}
             </h2>
           </div>
@@ -224,7 +224,7 @@ export default function ChatPage() {
             variant="outline"
             onClick={handleClear}
             disabled={isSending || messages.length === 0}
-            className="rounded-full border-white/10 bg-white/5 text-sm font-semibold text-white/80 transition hover:border-red-300/50 hover:text-white disabled:opacity-60"
+            className="rounded-full border-border bg-background/80 text-sm font-semibold text-foreground/80 shadow-sm transition hover:border-red-300/60 hover:bg-muted hover:text-foreground disabled:opacity-60 dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-red-300/50 dark:hover:text-white"
           >
             {t.chat.clear}
           </Button>
@@ -233,10 +233,10 @@ export default function ChatPage() {
         <div className="mt-6 grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-4">
           <div
             ref={viewportRef}
-            className="scrollbar-dark flex min-h-0 flex-col gap-4 overflow-y-auto rounded-[28px] border border-white/10 bg-slate-950/60 p-5"
+            className="scrollbar-dark flex min-h-0 flex-col gap-4 overflow-y-auto rounded-[28px] border border-border bg-muted/50 p-5 dark:border-white/10 dark:bg-slate-950/60"
           >
             {messages.length === 0 ? (
-              <div className="rounded-2xl border border-dashed border-white/10 bg-slate-900/50 p-6 text-sm text-slate-300/70">
+              <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground dark:border-white/10 dark:bg-slate-900/50">
                 {t.chat.emptyState}
               </div>
             ) : (
@@ -255,17 +255,17 @@ export default function ChatPage() {
                     <div
                       className={`max-w-[82%] rounded-xl border px-3 py-2 shadow ${
                         isUser
-                          ? "border-violet-300/60 bg-gradient-to-r from-violet-500 to-indigo-500 text-slate-950 shadow-violet-500/30"
-                          : "border-white/10 bg-slate-900/70 text-white/90 shadow-slate-950/30"
+                          ? "border-violet-200 bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-violet-500/30"
+                          : "border-border bg-card text-foreground shadow-sm dark:border-white/10 dark:bg-slate-900/70 dark:text-white/90 dark:shadow-slate-950/30"
                       }`}
                     >
                       <div className="text-sm whitespace-pre-line">
                         {isLoading ? (
-                          <div className="flex items-center gap-1 text-white/80">
+                          <div className="flex items-center gap-1 text-foreground/80">
                             {[0, 1, 2].map((index) => (
                               <span
                                 key={index}
-                                className="inline-block size-2 rounded-full bg-white/70 animate-bounce"
+                                className="inline-block size-2 rounded-full bg-foreground/70 animate-bounce"
                                 style={{ animationDelay: `${index * 120}ms` }}
                               />
                             ))}
@@ -277,7 +277,7 @@ export default function ChatPage() {
                         )}
                       </div>
                       {!isUser && (
-                        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-white/50">
+                        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground dark:text-white/60">
                           {isError ? (
                             <span>{t.chat.answerError}</span>
                           ) : (
@@ -300,7 +300,7 @@ export default function ChatPage() {
           </div>
 
           <form className="space-y-3" onSubmit={handleSubmit}>
-            <div className="flex flex-col gap-2 rounded-[28px] border border-white/10 bg-slate-950/70 p-4 shadow-inner shadow-violet-600/10">
+            <div className="flex flex-col gap-2 rounded-[28px] border border-border bg-card p-4 shadow-inner shadow-slate-900/5 dark:border-white/10 dark:bg-slate-950/70 dark:shadow-violet-600/10">
               <textarea
                 value={input}
                 onChange={(event) => setInput(event.target.value)}
@@ -312,7 +312,7 @@ export default function ChatPage() {
                 }}
                 placeholder={t.chat.placeholder}
                 rows={2}
-                className="w-full resize-none rounded-2xl border border-white/10 bg-slate-950/90 p-3 text-sm text-white shadow-inner shadow-violet-500/15 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
+                className="w-full resize-none rounded-2xl border border-border bg-card p-3 text-sm text-foreground shadow-inner shadow-slate-900/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/90 dark:text-white dark:shadow-violet-500/15 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
                 disabled={isSending}
               />
             </div>
@@ -325,7 +325,7 @@ export default function ChatPage() {
                     variant="outline"
                     size="sm"
                     onClick={() => setInput(prompt)}
-                    className="h-auto rounded-full border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
+                    className="h-auto rounded-full border-border bg-background/70 px-4 py-1.5 text-xs font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
                   >
                     {prompt}
                   </Button>

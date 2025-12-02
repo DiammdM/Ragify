@@ -148,11 +148,11 @@ export default function SettingsPage() {
 
   return (
     <section
-      className="flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur"
+      className="flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
       <header className="space-y-3">
-        <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+        <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
           {t.settings.title}
         </h2>
       </header>
@@ -161,9 +161,9 @@ export default function SettingsPage() {
         className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 lg:grid-cols-2 lg:overflow-visible lg:pr-0"
         onSubmit={handleSubmit}
       >
-        <div className="space-y-5 rounded-[28px] border border-white/10 bg-slate-950/60 p-6">
-          <label className="block space-y-2 text-sm text-slate-200/90">
-            <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+        <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+          <label className="block space-y-2 text-sm text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               {t.settings.modelLabel}
             </span>
             <Select
@@ -173,16 +173,16 @@ export default function SettingsPage() {
             >
               <SelectTrigger
                 aria-label={t.settings.modelLabel}
-                className="h-auto min-h-[44px] w-full rounded-lg border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium leading-5 text-white shadow-inner shadow-violet-500/20 data-[placeholder]:text-white/60"
+                className="h-auto min-h-[44px] w-full rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium leading-5 text-foreground shadow-inner shadow-slate-900/5 data-[placeholder]:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-white dark:shadow-violet-500/20"
               >
                 <SelectValue placeholder={t.settings.modelLabel} />
               </SelectTrigger>
-              <SelectContent className="border-white/10 bg-slate-950/95 text-white">
+              <SelectContent className="border border-border bg-card text-foreground shadow-lg dark:border-white/10 dark:bg-slate-950/95 dark:text-white">
                 {modelOptions.map((option) => (
                   <SelectItem
                     key={option.value}
                     value={option.value}
-                    className="text-sm text-white/90"
+                    className="text-sm text-foreground dark:text-white/90"
                   >
                     {option.label}
                   </SelectItem>
@@ -192,11 +192,11 @@ export default function SettingsPage() {
           </label>
 
           <label
-            className={`block space-y-2 text-sm text-slate-200/90 ${
+            className={`block space-y-2 text-sm text-muted-foreground ${
               showOllamaFields ? "opacity-60" : ""
             }`}
           >
-            <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               {t.settings.apiLabel}
             </span>
             <Input
@@ -208,8 +208,8 @@ export default function SettingsPage() {
             />
           </label>
 
-          <label className="block space-y-2 text-sm text-slate-200/90">
-            <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+          <label className="block space-y-2 text-sm text-muted-foreground">
+            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               {t.settings.chunksLabel}
             </span>
             <Input
@@ -222,19 +222,19 @@ export default function SettingsPage() {
               disabled={isSaving}
               className="appearance-none [appearance:textfield] [&::-webkit-inner-spin-button]:appearance-none [&::-webkit-outer-spin-button]:appearance-none"
             />
-            <span className="block text-xs text-slate-300/75">
+            <span className="block text-xs text-muted-foreground">
               {t.settings.chunksHelper}
             </span>
           </label>
 
           {showOllamaFields && (
             <div className="space-y-4 rounded-2xl border border-dashed border-violet-400/40 bg-violet-500/5 p-4">
-              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-200/80">
+              <p className="text-xs font-semibold uppercase tracking-[0.28em] text-violet-700 dark:text-violet-200/80">
                 {t.settings.ollamaConfig.title}
               </p>
 
-              <label className="block space-y-2 text-sm text-slate-200/90">
-                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+              <label className="block space-y-2 text-sm text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                   {t.settings.ollamaConfig.hostLabel}
                 </span>
                 <Input
@@ -246,8 +246,8 @@ export default function SettingsPage() {
                 />
               </label>
 
-              <label className="block space-y-2 text-sm text-slate-200/90">
-                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+              <label className="block space-y-2 text-sm text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                   {t.settings.ollamaConfig.portLabel}
                 </span>
                 <Input
@@ -260,8 +260,8 @@ export default function SettingsPage() {
                 />
               </label>
 
-              <label className="block space-y-2 text-sm text-slate-200/90">
-                <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+              <label className="block space-y-2 text-sm text-muted-foreground">
+                <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
                   {t.settings.ollamaConfig.modelLabel}
                 </span>
                 <Input
@@ -271,7 +271,7 @@ export default function SettingsPage() {
                   placeholder={t.settings.ollamaConfig.modelPlaceholder}
                   disabled={isSaving}
                 />
-                <span className="block text-xs text-slate-300/75">
+                <span className="block text-xs text-muted-foreground">
                   {t.settings.ollamaConfig.helper}
                 </span>
               </label>
@@ -279,15 +279,15 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="space-y-5 rounded-[28px] border border-white/10 bg-slate-950/60 p-6">
-          <div className="rounded-2xl border border-dashed border-white/15 bg-slate-900/70 p-5 text-sm text-slate-200/80">
+        <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+          <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-foreground dark:border-white/15 dark:bg-slate-900/70">
             <p>
               {t.settings.modelLabel}:{" "}
-              <span className="font-semibold text-white">
+              <span className="font-semibold text-foreground dark:text-white">
                 {t.settings.models[selectedModel]}
               </span>
             </p>
-            <p className="mt-3 text-xs text-slate-300/70">{t.qa.note}</p>
+            <p className="mt-3 text-xs text-muted-foreground">{t.qa.note}</p>
           </div>
 
           <div className="flex flex-col gap-3">
@@ -303,14 +303,16 @@ export default function SettingsPage() {
             {feedback && (
               <span
                 className={`text-xs font-medium ${
-                  feedback.isError ? "text-rose-200/90" : "text-emerald-200/90"
+                  feedback.isError
+                    ? "text-rose-600 dark:text-rose-200/90"
+                    : "text-emerald-700 dark:text-emerald-200/90"
                 }`}
               >
                 {feedback.message}
               </span>
             )}
             {loadError && (
-              <span className="text-xs font-medium text-rose-200/90">
+              <span className="text-xs font-medium text-rose-600 dark:text-rose-200/90">
                 {loadError}
               </span>
             )}

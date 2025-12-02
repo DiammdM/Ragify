@@ -1,12 +1,25 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useState } from "react";
+import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
 import {
   ALLOWED_FILE_ACCEPT,
   ALLOWED_FILE_EXTENSION_SET,
 } from "@/lib/library/file-types";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
+import { Input } from "@/components/ui/input";
+import { useTheme } from "@/components/theme-provider";
+import {
+  AlertDialog,
+  AlertDialogAction,
+  AlertDialogCancel,
+  AlertDialogContent,
+  AlertDialogDescription,
+  AlertDialogFooter,
+  AlertDialogHeader,
+  AlertDialogTitle,
+} from "@/components/ui/alert-dialog";
+import clsx from "clsx";
 
 type Status = "uploaded" | "indexing" | "indexed";
 type IndexingStage = "extracting" | "chunking" | "embedding" | "saving";
@@ -107,10 +120,17 @@ const isSupportedFile = (fileName: string) => {
 
 export default function LibraryPage() {
   const { t, language } = useLanguage();
+  const { theme } = useTheme();
+  const isLight = theme === "light";
   const [documents, setDocuments] = useState<DocumentRecord[]>([]);
   const [message, setMessage] = useState<ToastMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [pendingDelete, setPendingDelete] = useState<{
+    id: string;
+    name: string;
+  } | null>(null);
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
 
   const locale = language === "en" ? "en-US" : "zh-CN";
   const dateFormatter = useMemo(
@@ -125,11 +145,20 @@ export default function LibraryPage() {
     [locale]
   );
 
-  const statusStyles: Record<Status, string> = {
-    uploaded: "border border-slate-500/40 bg-slate-700/40 text-slate-200",
-    indexing: "border border-amber-300/40 bg-amber-500/15 text-amber-100",
-    indexed: "border border-emerald-300/40 bg-emerald-500/15 text-emerald-100",
-  };
+  const statusStyles: Record<Status, string> = useMemo(
+    () => ({
+      uploaded: isLight
+        ? "border border-slate-200 bg-slate-50 text-slate-700"
+        : "border border-slate-500/40 bg-slate-700/40 text-slate-200",
+      indexing: isLight
+        ? "border border-amber-200 bg-amber-50 text-amber-800"
+        : "border border-amber-300/40 bg-amber-500/15 text-amber-100",
+      indexed: isLight
+        ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
+        : "border border-emerald-300/40 bg-emerald-500/15 text-emerald-100",
+    }),
+    [isLight]
+  );
 
   const hasIndexingDocuments = useMemo(
     () => documents.some((doc) => doc.status === "indexing"),
@@ -310,6 +339,8 @@ export default function LibraryPage() {
     } catch (error) {
       console.error("Failed to delete document", error);
       setMessage({ type: "error", text: t.library.operationError });
+    } finally {
+      setPendingDelete(null);
     }
   };
 
@@ -385,37 +416,43 @@ export default function LibraryPage() {
 
   return (
     <section
-      className="flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur"
+      className="flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
-          <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+          <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
             {t.library.title}
           </h2>
         </div>
-        <label
-          className={`flex items-center gap-2 rounded-full border border-violet-300/60 bg-violet-500/20 px-5 py-2.5 text-sm font-semibold text-white transition hover:border-violet-200/70 hover:bg-violet-500/30 ${
-            isUploading ? "cursor-not-allowed opacity-70" : "cursor-pointer"
-          }`}
-          aria-busy={isUploading}
-        >
-          <input
+        <div className="flex items-center gap-2">
+          <Input
+            ref={fileInputRef}
             type="file"
             multiple
-            className="hidden"
             onChange={handleFileSelection}
             disabled={isUploading}
             accept={ALLOWED_FILE_ACCEPT}
+            className="sr-only"
+            aria-busy={isUploading}
           />
-          {isUploading ? t.library.uploading : t.library.uploadCta}
-        </label>
+          <Button
+            type="button"
+            variant="cta"
+            size="pill-sm"
+            onClick={() => fileInputRef.current?.click()}
+            disabled={isUploading}
+            className="px-5 py-2 text-sm font-semibold"
+          >
+            {isUploading ? t.library.uploading : t.library.uploadCta}
+          </Button>
+        </div>
       </header>
 
       <div className="scrollbar-dark flex-1 space-y-4 overflow-y-auto pr-1">
-        <div className="rounded-[28px] border border-dashed border-white/15 bg-slate-950/60 p-6 text-sm text-slate-200/80">
-          <p className="font-medium text-white/90">{t.library.dropLabel}</p>
-          <p className="mt-2 text-xs text-slate-300/70">
+        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-foreground dark:border-white/15 dark:bg-slate-950/60">
+          <p className="font-medium text-foreground">{t.library.dropLabel}</p>
+          <p className="mt-2 text-xs text-muted-foreground">
             {t.library.uploadHint}
           </p>
         </div>
@@ -424,7 +461,11 @@ export default function LibraryPage() {
           <div
             className={`rounded-[28px] px-5 py-3 text-sm ${
               message.type === "error"
-                ? "border border-red-400/40 bg-red-500/10 text-red-100"
+                ? isLight
+                  ? "border border-red-200 bg-red-50 text-red-800"
+                  : "border border-red-400/40 bg-red-500/10 text-red-100"
+                : isLight
+                ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
                 : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
             }`}
           >
@@ -432,22 +473,23 @@ export default function LibraryPage() {
           </div>
         )}
 
-        <div className="overflow-hidden rounded-[28px] border border-white/10">
-          <div className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] gap-4 border-b border-white/10 bg-slate-950/70 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-slate-300/80">
+        <div className="overflow-hidden rounded-[28px] border border-border dark:border-white/10">
+          <div className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] gap-4 border-b border-border bg-muted/70 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">
             <span>{t.library.tableHeaders.name}</span>
             <span>{t.library.tableHeaders.size}</span>
             <span>{t.library.tableHeaders.status}</span>
             <span>{t.library.tableHeaders.updated}</span>
           </div>
-          <div className="divide-y divide-white/5 bg-slate-950/60">
+          <div className="divide-y divide-border bg-card dark:divide-white/5 dark:bg-slate-950/60">
             {documents.length === 0 ? (
-              <div className="px-7 py-10 text-center text-sm text-slate-300/70">
+              <div className="px-7 py-10 text-center text-sm text-muted-foreground">
                 {isLoading ? t.library.loading : t.library.emptyState}
               </div>
             ) : (
               documents.map((doc) => {
                 const stageLabel =
-                  doc.indexingStage && t.library.indexingStages[doc.indexingStage]
+                  doc.indexingStage &&
+                  t.library.indexingStages[doc.indexingStage]
                     ? t.library.indexingStages[doc.indexingStage]
                     : null;
                 const isIndexing = doc.status === "indexing";
@@ -466,17 +508,19 @@ export default function LibraryPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-white/90"
+                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-foreground dark:text-white/90"
                   >
                     <div className="min-w-0 space-y-1">
-                      <p className="truncate text-base font-semibold text-white">
+                      <p className="truncate text-base font-semibold text-foreground dark:text-white">
                         {doc.name}
                       </p>
-                      <p className="text-xs text-slate-300/70">
+                      <p className="text-xs text-muted-foreground">
                         {t.library.chunkingNote}
                       </p>
                     </div>
-                    <span className="text-sm text-slate-200/80">{doc.size}</span>
+                    <span className="text-sm text-foreground/80 dark:text-slate-200/80">
+                      {doc.size}
+                    </span>
                     <span
                       className={`inline-flex min-w-[92px] items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold ${
                         statusStyles[doc.status]
@@ -484,27 +528,36 @@ export default function LibraryPage() {
                     >
                       {statusLabel}
                     </span>
-                    <span className="text-xs text-slate-200/80">
+                    <span className="text-xs text-foreground/70 dark:text-slate-200/80">
                       {dateFormatter.format(doc.updatedAt)}
                     </span>
-                    <div className="flex gap-1.5 text-xs text-slate-200/80">
+                    <div className="flex gap-1.5 text-xs text-foreground/80 dark:text-slate-200/80">
                       <Button
                         type="button"
                         onClick={() => handleIndex(doc.id)}
                         disabled={
                           doc.status === "indexed" || doc.status === "indexing"
                         }
-                        size="sm"
-                        className="h-auto rounded-lg border border-violet-300/40 bg-violet-500/15 px-3 py-1 text-[11px] font-semibold text-violet-100 transition hover:border-violet-200/60 hover:bg-violet-500/25 disabled:cursor-not-allowed disabled:opacity-60"
+                        variant="cta"
+                        size="pill-sm"
+                        //className="px-3 py-1 text-[11px] font-semibold",
+                        className={clsx(
+                          "px-3 py-1 text-[11px] font-semibold",
+                          doc.status === "indexed"
+                            ? "disabled:pointer-events-auto disabled:cursor-not-allowed"
+                            : "cursor-pointer"
+                        )}
                       >
                         {actionLabel}
                       </Button>
                       <Button
                         type="button"
-                        onClick={() => handleDelete(doc.id)}
-                        variant="outline"
+                        onClick={() =>
+                          setPendingDelete({ id: doc.id, name: doc.name })
+                        }
                         size="sm"
-                        className="h-auto rounded-lg border-white/10 bg-white/5 px-3 py-1 text-[11px] font-semibold text-slate-200 transition hover:border-red-400/40 hover:bg-red-500/15 hover:text-red-100"
+                        variant="destructive"
+                        className="px-3 py-1 text-[11px] font-semibold hover:!bg-destructive/100 cursor-pointer"
                       >
                         {t.library.deleteAction}
                       </Button>
@@ -516,6 +569,36 @@ export default function LibraryPage() {
           </div>
         </div>
       </div>
+      <AlertDialog
+        open={Boolean(pendingDelete)}
+        onOpenChange={(open) => {
+          if (!open) setPendingDelete(null);
+        }}
+      >
+        <AlertDialogContent>
+          <AlertDialogHeader>
+            <AlertDialogTitle>{t.library.deleteDialog.title}</AlertDialogTitle>
+            <AlertDialogDescription>
+              {t.library.deleteDialog.description}
+              {pendingDelete?.name ? ` (${pendingDelete.name})` : ""}
+            </AlertDialogDescription>
+          </AlertDialogHeader>
+          <AlertDialogFooter>
+            <AlertDialogCancel>
+              {t.library.deleteDialog.cancel}
+            </AlertDialogCancel>
+            <AlertDialogAction
+              onClick={() => {
+                if (pendingDelete) {
+                  void handleDelete(pendingDelete.id);
+                }
+              }}
+            >
+              {t.library.deleteDialog.confirm}
+            </AlertDialogAction>
+          </AlertDialogFooter>
+        </AlertDialogContent>
+      </AlertDialog>
     </section>
   );
 }

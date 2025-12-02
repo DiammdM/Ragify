@@ -5,6 +5,7 @@ import { FormEvent, useState } from 'react';
 import { useRouter } from 'next/navigation';
 import { useLanguage } from '@/components/language-provider';
 import { Button } from '@/components/ui/button';
+import { Input } from '@/components/ui/input';
 
 export default function LoginPage() {
   const { t } = useLanguage();
@@ -44,36 +45,36 @@ export default function LoginPage() {
   };
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-6 rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+    <section className="mx-auto w-full max-w-2xl space-y-6 rounded-[32px] border border-border bg-card/90 p-8 shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:shadow-violet-900/20">
       <header className="space-y-2">
-        <h2 className="text-2xl font-semibold text-white sm:text-3xl">{t.auth.login.title}</h2>
-        <p className="text-base text-slate-200/80">{t.auth.login.subtitle}</p>
+        <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
+          {t.auth.login.title}
+        </h2>
+        <p className="text-base text-muted-foreground">{t.auth.login.subtitle}</p>
       </header>
 
       <form className="space-y-5" onSubmit={handleSubmit}>
-        <label className="block space-y-2 text-sm text-slate-200/90">
-          <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+        <label className="block space-y-2 text-sm text-muted-foreground">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             {t.auth.form.nameLabel}
           </span>
-          <input
+          <Input
             type="text"
             value={name}
             onChange={(event) => setName(event.target.value)}
             placeholder={t.auth.form.namePlaceholder}
-            className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
           />
         </label>
 
-        <label className="block space-y-2 text-sm text-slate-200/90">
-          <span className="text-sm font-semibold uppercase tracking-[0.28em] text-white/80">
+        <label className="block space-y-2 text-sm text-muted-foreground">
+          <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
             {t.auth.form.passwordLabel}
           </span>
-          <input
+          <Input
             type="password"
             value={password}
             onChange={(event) => setPassword(event.target.value)}
             placeholder={t.auth.form.passwordPlaceholder}
-            className="w-full rounded-lg border border-white/10 bg-slate-900/70 px-4 py-3 text-sm font-medium text-white shadow-inner shadow-violet-500/20 outline-none transition focus:border-violet-300/70 focus:shadow-violet-500/30"
           />
         </label>
 
@@ -89,9 +90,12 @@ export default function LoginPage() {
           >
             {isSubmitting ? t.auth.form.submitting : t.auth.login.submit}
           </Button>
-          <p className="text-xs text-slate-300/80">
+          <p className="text-xs text-muted-foreground">
             {t.auth.login.switchPrompt}{' '}
-            <Link href="/register" className="font-semibold text-violet-200 hover:text-white">
+            <Link
+              href="/register"
+              className="font-semibold text-primary hover:text-primary/80"
+            >
               {t.auth.login.switchCta}
             </Link>
           </p>

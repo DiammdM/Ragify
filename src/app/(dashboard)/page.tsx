@@ -223,13 +223,13 @@ export default function Home() {
 
   return (
     <section
-      className="flex flex-col gap-8 overflow-hidden"
+      className="flex flex-col gap-8 overflow-hidden shadow-xl shadow-slate-900/10 backdrop-blur rounded-[32px]"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
-      <div className="scrollbar-dark flex flex-1 flex-col rounded-[32px] border border-white/10 bg-slate-900/60 p-8 shadow-2xl shadow-violet-900/20 backdrop-blur">
+      <div className="scrollbar-dark flex flex-1 flex-col rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:shadow-violet-900/20">
         <div className="flex flex-col gap-6 pb-8">
           <div>
-            <h2 className="text-2xl font-semibold text-white sm:text-3xl">
+            <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
               {t.qa.title}
             </h2>
           </div>
@@ -241,7 +241,7 @@ export default function Home() {
                 onChange={(event) => setQuestion(event.target.value)}
                 placeholder={t.qa.placeholder}
                 rows={1}
-                className="w-full min-h-[52px] rounded-[20px] border border-white/10 bg-slate-950/70 px-4 py-3 text-base text-white shadow-inner shadow-violet-600/10 outline-none transition focus:border-violet-300/70 focus:bg-slate-950 focus:shadow-violet-500/30"
+                className="w-full min-h-[52px] rounded-[20px] border border-border bg-card px-4 py-3 text-base text-foreground shadow-inner shadow-slate-950/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/70 dark:text-white dark:shadow-violet-600/10 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
               />
             </label>
             <div className="flex flex-wrap items-center justify-between gap-4">
@@ -253,7 +253,7 @@ export default function Home() {
                     variant="outline"
                     size="sm"
                     onClick={() => setQuestion(item)}
-                    className="h-auto rounded-full border-white/10 bg-white/5 px-4 py-1.5 text-xs font-semibold text-white/80 transition hover:border-violet-300/70 hover:text-white"
+                    className="h-auto rounded-full border-border bg-background/70 px-4 py-1.5 text-xs font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
                   >
                     {item}
                   </Button>
@@ -273,10 +273,10 @@ export default function Home() {
         </div>
         <div className="space-y-5">
           <div className="flex flex-col gap-2 sm:flex-row sm:items-center sm:justify-between">
-            <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-purple-200/90">
+            <h3 className="text-sm font-semibold uppercase tracking-[0.35em] text-muted-foreground">
               {t.qa.historyLabel}
             </h3>
-            <p className="text-xs text-slate-300/70">{t.qa.note}</p>
+            <p className="text-xs text-muted-foreground">{t.qa.note}</p>
           </div>
           <div
             ref={historyRef}
@@ -284,7 +284,7 @@ export default function Home() {
             style={{ maxHeight: "452px" }}
           >
             {history.length === 0 ? (
-              <div className="rounded-[28px] border border-dashed border-white/10 bg-slate-950/60 p-8 text-center text-sm text-slate-300/70">
+              <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-8 text-center text-sm text-muted-foreground dark:border-white/10 dark:bg-slate-950/60">
                 {t.qa.emptyState}
               </div>
             ) : (
@@ -294,58 +294,58 @@ export default function Home() {
                 .map((item) => (
                   <article
                     key={item.id}
-                    className="space-y-4 rounded-[28px] border border-white/10 bg-slate-950/70 p-6 shadow-inner shadow-slate-950/40"
+                    className="space-y-4 rounded-[28px] border border-border bg-card p-6 shadow-inner shadow-slate-900/5 dark:border-white/10 dark:bg-slate-950/70 dark:shadow-slate-950/40"
                   >
                     <div>
-                      <p className="text-xs uppercase tracking-[0.3em] text-purple-200/80">
+                      <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
                         {t.qa.ask}
                       </p>
-                      <p className="mt-1 text-base text-white/90">
+                      <p className="mt-1 text-base text-foreground">
                         {item.question}
                       </p>
                     </div>
-                    <div className="rounded-2xl border border-white/5 bg-slate-950/80 p-5">
-                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-200/80">
+                    <div className="rounded-2xl border border-border bg-muted/40 p-5 dark:border-white/5 dark:bg-slate-950/80">
+                      <p className="mb-2 text-xs font-semibold uppercase tracking-[0.3em] text-emerald-700 dark:text-emerald-200/80">
                         {t.qa.answerTitle}
                       </p>
                       {item.status === "loading" ? (
-                        <p className="text-sm leading-relaxed text-slate-400/70 animate-pulse">
+                        <p className="text-sm leading-relaxed text-muted-foreground animate-pulse">
                           {t.qa.answerLoading}
                         </p>
                       ) : item.status === "error" ? (
-                        <p className="text-sm leading-relaxed text-rose-200">
+                        <p className="text-sm leading-relaxed text-rose-500 dark:text-rose-200">
                           {item.error ?? t.qa.errorFallback}
                         </p>
                       ) : item.answerError ? (
-                        <p className="text-sm leading-relaxed text-rose-200">
+                        <p className="text-sm leading-relaxed text-rose-500 dark:text-rose-200">
                           {item.answerError}
                         </p>
                       ) : item.answer ? (
                         <>
-                          <p className="text-sm leading-relaxed text-slate-100 whitespace-pre-line">
+                          <p className="text-sm leading-relaxed text-foreground whitespace-pre-line">
                             {item.answer}
                           </p>
                           {(item.answerModel || item.answerProvider) && (
-                            <p className="mt-3 text-xs uppercase tracking-[0.35em] text-slate-500">
+                            <p className="mt-3 text-xs uppercase tracking-[0.35em] text-muted-foreground">
                               {t.qa.answerModelLabel}:{" "}
                               {[item.answerModel, item.answerProvider]
                                 .filter(Boolean)
                                 .join(" · ")}
-                              <span className="float-right text-[11px] text-slate-400 normal-case">
+                              <span className="float-right text-[11px] text-muted-foreground normal-case">
                                 {timeFormatter.format(item.createdAt)}
                               </span>
                             </p>
                           )}
                           {!item.answerModel && !item.answerProvider && (
-                            <p className="mt-3 text-[11px] uppercase tracking-[0.35em] text-slate-500">
-                              <span className="float-right text-[11px] text-slate-400 normal-case">
+                            <p className="mt-3 text-[11px] uppercase tracking-[0.35em] text-muted-foreground">
+                              <span className="float-right text-[11px] text-muted-foreground normal-case">
                                 {timeFormatter.format(item.createdAt)}
                               </span>
                             </p>
                           )}
                         </>
                       ) : (
-                        <p className="text-sm leading-relaxed text-slate-300/80">
+                        <p className="text-sm leading-relaxed text-muted-foreground">
                           {t.qa.answerEmpty}
                         </p>
                       )}
