@@ -148,9 +148,10 @@ export default function SettingsPage() {
 
   return (
     <section
-      className="flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
+      className="relative flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-cyan-400/45 via-emerald-300/35 to-transparent" />
       <header className="space-y-3">
         <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
           {t.settings.title}
@@ -158,7 +159,7 @@ export default function SettingsPage() {
       </header>
 
       <form
-        className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 lg:grid-cols-2 lg:overflow-visible lg:pr-0"
+        className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 animate-slide-delayed lg:grid-cols-2 lg:overflow-visible lg:pr-0"
         onSubmit={handleSubmit}
       >
         <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
@@ -296,7 +297,9 @@ export default function SettingsPage() {
               disabled={isSaving || isLoading}
               variant="cta"
               size="pill"
-              className="w-fit font-semibold"
+              className={`w-fit font-semibold ${
+                isSaving ? "" : "animate-glow-soft"
+              }`}
             >
               {isSaving ? t.settings.saving : t.settings.save}
             </Button>

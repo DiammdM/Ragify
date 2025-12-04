@@ -416,9 +416,10 @@ export default function LibraryPage() {
 
   return (
     <section
-      className="flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
+      className="relative flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-indigo-400/50 via-violet-400/40 to-transparent" />
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
@@ -508,7 +509,7 @@ export default function LibraryPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-foreground dark:text-white/90"
+                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-foreground transition duration-200 animate-slide-up hover:bg-white/5 dark:text-white/90 dark:hover:bg-white/5"
                   >
                     <div className="min-w-0 space-y-1">
                       <p className="truncate text-base font-semibold text-foreground dark:text-white">
@@ -521,13 +522,23 @@ export default function LibraryPage() {
                     <span className="text-sm text-foreground/80 dark:text-slate-200/80">
                       {doc.size}
                     </span>
-                    <span
-                      className={`inline-flex min-w-[92px] items-center justify-center rounded-full px-3 py-1 text-[11px] font-semibold ${
+                    <div
+                      className={`inline-flex min-w-[120px] flex-col items-stretch justify-center gap-2 rounded-full px-3 py-1 text-[11px] font-semibold ${
                         statusStyles[doc.status]
                       }`}
                     >
-                      {statusLabel}
-                    </span>
+                      <span className="text-center">{statusLabel}</span>
+                      {isIndexing && (
+                        <div className="h-1.5 w-full overflow-hidden rounded-full bg-black/10 dark:bg-white/10">
+                          <div
+                            className="shimmer-progress h-full rounded-full bg-gradient-to-r from-violet-400 via-indigo-500 to-blue-400"
+                            style={{
+                              width: `${Math.max(doc.indexingProgress, 12)}%`,
+                            }}
+                          />
+                        </div>
+                      )}
+                    </div>
                     <span className="text-xs text-foreground/70 dark:text-slate-200/80">
                       {dateFormatter.format(doc.updatedAt)}
                     </span>
@@ -540,7 +551,6 @@ export default function LibraryPage() {
                         }
                         variant="cta"
                         size="pill-sm"
-                        //className="px-3 py-1 text-[11px] font-semibold",
                         className={clsx(
                           "px-3 py-1 text-[11px] font-semibold",
                           doc.status === "indexed"
@@ -557,7 +567,7 @@ export default function LibraryPage() {
                         }
                         size="sm"
                         variant="destructive"
-                        className="px-3 py-1 text-[11px] font-semibold hover:!bg-destructive/100 cursor-pointer"
+                        className="px-3 py-1 text-[11px] font-semibold hover:!bg-destructive/50  dark:hover:!bg-destructive/100 cursor-pointer"
                       >
                         {t.library.deleteAction}
                       </Button>

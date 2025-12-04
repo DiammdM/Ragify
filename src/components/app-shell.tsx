@@ -55,18 +55,38 @@ export function AppShell({ children }: PropsWithChildren) {
     : "border-white/10 bg-white/10 text-white/80 hover:border-violet-300/60 hover:text-white";
 
   return (
-    <div className="relative min-h-screen bg-background text-foreground transition-colors">
+    <div className="relative min-h-screen overflow-hidden bg-background text-foreground transition-colors">
       <div
         className={clsx(
-          "pointer-events-none absolute inset-0 -z-10 transition-colors",
+          "pointer-events-none absolute inset-0 -z-10 opacity-90 transition-colors",
           isLight
             ? "bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.16),_rgba(255,255,255,0.9))]"
             : "bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.32),_rgba(2,6,23,0.95))]"
         )}
         aria-hidden
       />
-      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-8 py-10">
-        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between">
+      <div className="motion-aurora" aria-hidden>
+        <div
+          className={clsx(
+            "aurora-veil",
+            isLight ? "aurora-veil--light" : "aurora-veil--dark"
+          )}
+        />
+        <div
+          className="glow-orb glow-orb--violet"
+          style={{ top: "-24%", right: "-16%" }}
+        />
+        <div
+          className="glow-orb glow-orb--teal"
+          style={{ bottom: "-26%", left: "-18%", animationDelay: "0.6s" }}
+        />
+        <div
+          className="glow-orb glow-orb--rose"
+          style={{ top: "32%", left: "22%", animationDuration: "24s" }}
+        />
+      </div>
+      <div className="relative mx-auto flex min-h-screen w-full max-w-7xl flex-col gap-10 px-8 py-5">
+        <header className="flex flex-col gap-4 sm:flex-row sm:items-center sm:justify-between animate-slide-up">
           <div className="space-y-1">
             <h1 className="text-4xl font-semibold text-foreground">
               {t.layout.brand}
@@ -123,7 +143,7 @@ export function AppShell({ children }: PropsWithChildren) {
             </Button>
           </div>
         </header>
-        <div className="grid flex-1 gap-10 lg:grid-cols-[260px_1fr]">
+        <div className="grid flex-1 gap-10 lg:grid-cols-[260px_1fr] animate-slide-delayed">
           <aside
             className={clsx(
               "flex flex-col gap-6 rounded-3xl border p-6 shadow-2xl backdrop-blur",
@@ -143,7 +163,8 @@ export function AppShell({ children }: PropsWithChildren) {
                   <Link
                     key={item.href}
                     href={item.href}
-                    className={`flex items-center gap-3 rounded-2xl border px-4 py-3 text-base font-medium transition-all ${
+                    className={clsx(
+                      "nav-backlight group flex items-center gap-3 rounded-2xl border px-4 py-3 text-base font-medium transition-colors",
                       isActive
                         ? clsx(
                             "border bg-gradient-to-r shadow-lg border-violet-300/80",
@@ -154,16 +175,20 @@ export function AppShell({ children }: PropsWithChildren) {
                         : isLight
                         ? "border-slate-200 bg-white/70 text-foreground/80 shadow-sm hover:border-violet-200 hover:bg-slate-300/80"
                         : "border-white/10 bg-white/5 text-white/80 hover:border-violet-300/60 hover:text-white"
-                    }`}
+                    )}
                   >
-                    <span>{item.label}</span>
+                    <span className="transition-colors duration-200 group-hover:text-white">
+                      {item.label}
+                    </span>
                   </Link>
                 );
               })}
             </nav>
           </aside>
           <main className="flex-1">
-            <div className="grid gap-8">{children}</div>
+            <div key={pathname} className="grid gap-8 route-transition">
+              {children}
+            </div>
           </main>
         </div>
       </div>

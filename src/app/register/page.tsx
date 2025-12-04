@@ -45,7 +45,8 @@ export default function RegisterPage() {
   };
 
   return (
-    <section className="mx-auto w-full max-w-2xl space-y-6 rounded-[32px] border border-border bg-card/90 p-8 shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:shadow-violet-900/20">
+    <section className="relative mx-auto w-full max-w-2xl space-y-6 rounded-[32px] border border-border bg-card/90 p-8 shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:shadow-violet-900/20">
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-emerald-400/45 via-cyan-300/35 to-transparent" />
       <header className="space-y-2">
         <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
           {t.auth.register.title}
@@ -86,7 +87,9 @@ export default function RegisterPage() {
             disabled={isSubmitting}
             variant="cta-success"
             size="pill"
-            className="w-fit font-semibold"
+            className={`w-fit font-semibold ${
+              isSubmitting ? "" : "animate-glow-soft"
+            }`}
           >
             {isSubmitting ? t.auth.form.submitting : t.auth.register.submit}
           </Button>

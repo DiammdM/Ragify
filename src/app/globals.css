@@ -162,3 +162,251 @@ a {
 .scrollbar-dark::-webkit-scrollbar-thumb:hover {
   background: rgba(99, 115, 129, 0.9);
 }
+
+.motion-aurora {
+  position: absolute;
+  inset: 0;
+  overflow: hidden;
+  pointer-events: none;
+  z-index: -10;
+}
+
+.aurora-veil {
+  position: absolute;
+  inset: -20%;
+  filter: blur(120px);
+  opacity: 0.6;
+  background-size: 160% 160%;
+  animation: aurora-shift 28s ease-in-out infinite alternate;
+  mix-blend-mode: screen;
+}
+
+.aurora-veil--light {
+  background-image:
+    radial-gradient(circle at 20% 20%, rgba(120, 70, 255, 0.25), transparent 35%),
+    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.2), transparent 38%),
+    conic-gradient(from 90deg, rgba(94, 234, 212, 0.24), rgba(59, 130, 246, 0.2), rgba(236, 72, 153, 0.16), rgba(94, 234, 212, 0.24));
+}
+
+.aurora-veil--dark {
+  background-image:
+    radial-gradient(circle at 18% 20%, rgba(129, 140, 248, 0.55), transparent 36%),
+    radial-gradient(circle at 76% 8%, rgba(236, 72, 153, 0.28), transparent 38%),
+    conic-gradient(from 120deg, rgba(14, 165, 233, 0.3), rgba(94, 234, 212, 0.22), rgba(59, 130, 246, 0.32), rgba(14, 165, 233, 0.3));
+  opacity: 0.7;
+}
+
+.glow-orb {
+  position: absolute;
+  width: 38rem;
+  height: 38rem;
+  border-radius: 9999px;
+  filter: blur(120px);
+  opacity: 0.35;
+  animation: orb-float 18s ease-in-out infinite;
+}
+
+.glow-orb--violet {
+  background: radial-gradient(circle, rgba(129, 140, 248, 0.8), rgba(79, 70, 229, 0.25));
+}
+
+.glow-orb--teal {
+  background: radial-gradient(circle, rgba(34, 211, 238, 0.55), rgba(14, 165, 233, 0.22));
+}
+
+.glow-orb--rose {
+  background: radial-gradient(circle, rgba(244, 114, 182, 0.45), rgba(236, 72, 153, 0.18));
+}
+
+@layer utilities {
+  .panel-floating {
+    transition: transform 240ms ease, box-shadow 240ms ease, border-color 240ms ease;
+  }
+
+  .panel-floating:hover {
+    transform: translateY(-6px);
+    box-shadow:
+      0 20px 48px -28px rgba(15, 23, 42, 0.5),
+      0 12px 28px -18px rgba(120, 70, 255, 0.25);
+    border-color: color-mix(in srgb, var(--ring) 40%, transparent);
+  }
+
+  .interactive-tile {
+    position: relative;
+    overflow: hidden;
+    transition: transform 220ms ease, box-shadow 240ms ease, border-color 220ms ease, background 220ms ease;
+  }
+
+  .interactive-tile::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 20% 20%, rgba(255, 255, 255, 0.1), transparent 40%);
+    opacity: 0;
+    transform: translateX(-18%);
+    transition: opacity 280ms ease, transform 320ms ease;
+  }
+
+  .interactive-tile:hover {
+    transform: translateY(-4px);
+    box-shadow:
+      0 16px 38px -24px rgba(15, 23, 42, 0.45),
+      0 10px 26px -18px rgba(79, 70, 229, 0.3);
+    border-color: color-mix(in srgb, var(--ring) 45%, transparent);
+  }
+
+  .interactive-tile:hover::after {
+    opacity: 1;
+    transform: translateX(8%);
+  }
+
+  .nav-backlight {
+    position: relative;
+    overflow: hidden;
+  }
+
+  .nav-backlight::before {
+    content: "";
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(
+      circle at 50% 50%,
+      rgba(120, 70, 255, 0.16),
+      transparent 55%
+    );
+    filter: blur(16px);
+    opacity: 0;
+    transition: opacity 200ms ease;
+    pointer-events: none;
+  }
+
+  .nav-backlight:hover::before,
+  .nav-backlight:focus-visible::before {
+    opacity: 1;
+  }
+
+  .chip-pressable {
+    transition: transform 160ms ease, box-shadow 200ms ease, border-color 200ms ease;
+  }
+
+  .chip-pressable:hover {
+    transform: translateY(-2px);
+    box-shadow: 0 10px 18px -14px rgba(15, 23, 42, 0.35);
+    border-color: color-mix(in srgb, var(--ring) 36%, transparent);
+  }
+
+  .chip-pressable:active {
+    transform: translateY(0);
+  }
+
+  .animate-slide-up {
+    animation: slide-up-fade 320ms cubic-bezier(0.16, 1, 0.3, 1);
+  }
+
+  .animate-slide-delayed {
+    animation: slide-up-fade 420ms cubic-bezier(0.16, 1, 0.3, 1);
+    animation-delay: 80ms;
+    animation-fill-mode: both;
+  }
+
+  .animate-glow-soft {
+    animation: glow-pulse 2.8s ease-in-out infinite;
+  }
+
+  .shimmer-progress {
+    background-size: 180% 100%;
+    animation: shimmer 1.8s ease-in-out infinite;
+  }
+
+  .route-transition {
+    animation: route-fade 320ms cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+}
+
+@keyframes aurora-shift {
+  0% {
+    transform: translate3d(-8%, 0, 0) rotate(-2deg);
+    background-position: 0% 40%, 30% 30%, 40% 40%;
+  }
+  50% {
+    transform: translate3d(6%, -4%, 0) rotate(1deg);
+    background-position: 40% 60%, 70% 40%, 60% 60%;
+  }
+  100% {
+    transform: translate3d(-6%, 3%, 0) rotate(-1deg);
+    background-position: 10% 55%, 20% 30%, 35% 45%;
+  }
+}
+
+@keyframes orb-float {
+  0% {
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+  50% {
+    transform: translate3d(8px, -16px, 0) scale(1.04);
+  }
+  100% {
+    transform: translate3d(-6px, 12px, 0) scale(1);
+  }
+}
+
+@keyframes glow-pulse {
+  0% {
+    box-shadow:
+      0 15px 40px -18px rgba(15, 23, 42, 0.35),
+      0 0 0 0 rgba(120, 70, 255, 0.26);
+  }
+  50% {
+    box-shadow:
+      0 18px 44px -16px rgba(15, 23, 42, 0.4),
+      0 0 0 18px rgba(120, 70, 255, 0);
+  }
+  100% {
+    box-shadow:
+      0 15px 40px -18px rgba(15, 23, 42, 0.35),
+      0 0 0 0 rgba(120, 70, 255, 0);
+  }
+}
+
+@keyframes slide-up-fade {
+  0% {
+    opacity: 0;
+    transform: translate3d(0, 10px, 0) scale(0.99);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@keyframes shimmer {
+  0% {
+    background-position: -40% 0;
+  }
+  100% {
+    background-position: 140% 0;
+  }
+}
+
+@keyframes route-fade {
+  0% {
+    opacity: 0.35;
+    transform: translate3d(0, 10px, 0) scale(0.995);
+  }
+  100% {
+    opacity: 1;
+    transform: translate3d(0, 0, 0) scale(1);
+  }
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .aurora-veil,
+  .glow-orb,
+  .animate-slide-up,
+  .animate-slide-delayed,
+  .animate-glow-soft,
+  .shimmer-progress {
+    animation-duration: 0.001ms !important;
+    animation-iteration-count: 1 !important;
+  }
+}

@@ -1,6 +1,6 @@
 "use client";
 
-import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
+import { FormEvent, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
 
@@ -98,11 +98,6 @@ export default function ChatPage() {
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const viewportRef = useRef<HTMLDivElement | null>(null);
-
-  const quickPrompts = useMemo(
-    () => t.chat.quickPrompts,
-    [t.chat.quickPrompts]
-  );
 
   useEffect(() => {
     const node = viewportRef.current;
@@ -209,9 +204,10 @@ export default function ChatPage() {
 
   return (
     <section
-      className="flex flex-col overflow-hidden shadow-xl shadow-slate-900/10 backdrop-blur rounded-[32px]"
+      className="relative flex flex-col overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-emerald-400/40 via-cyan-300/30 to-transparent" />
       <div className="flex h-full flex-col rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20">
         <div className="flex flex-col gap-3 sm:flex-row sm:items-center sm:justify-between">
           <div>
@@ -276,22 +272,6 @@ export default function ChatPage() {
                           message.content || t.chat.answerFallback
                         )}
                       </div>
-                      {!isUser && (
-                        <div className="mt-3 flex items-center gap-3 text-[11px] uppercase tracking-[0.3em] text-muted-foreground dark:text-white/60">
-                          {isError ? (
-                            <span>{t.chat.answerError}</span>
-                          ) : (
-                            <>
-                              {message.answerModel && (
-                                <span>{message.answerModel}</span>
-                              )}
-                              {message.answerProvider && (
-                                <span>{message.answerProvider}</span>
-                              )}
-                            </>
-                          )}
-                        </div>
-                      )}
                     </div>
                   </div>
                 );
@@ -315,22 +295,6 @@ export default function ChatPage() {
                 className="w-full resize-none rounded-2xl border border-border bg-card p-3 text-sm text-foreground shadow-inner shadow-slate-900/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/90 dark:text-white dark:shadow-violet-500/15 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
                 disabled={isSending}
               />
-            </div>
-            <div className="flex flex-wrap items-center gap-2">
-              <div className="flex flex-wrap gap-2">
-                {quickPrompts.map((prompt) => (
-                  <Button
-                    key={prompt}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setInput(prompt)}
-                    className="h-auto rounded-full border-border bg-background/70 px-4 py-1.5 text-xs font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
-                  >
-                    {prompt}
-                  </Button>
-                ))}
-              </div>
             </div>
           </form>
         </div>

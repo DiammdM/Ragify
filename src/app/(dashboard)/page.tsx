@@ -3,6 +3,11 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
+import {
+  Tooltip,
+  TooltipContent,
+  TooltipTrigger,
+} from "@/components/ui/tooltip";
 
 type ChunkResult = {
   id: string;
@@ -119,7 +124,10 @@ export default function Home() {
   const [isLoading, setIsLoading] = useState(false);
   const historyRef = useRef<HTMLDivElement | null>(null);
 
-  const suggestions = useMemo(() => t.qa.quickQuestions, [t]);
+  const suggestions = useMemo(
+    () => t.qa.quickQuestions.slice(0, 3),
+    [t.qa.quickQuestions]
+  );
   const timeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(language === "en" ? "en-US" : "zh-CN", {
@@ -223,9 +231,10 @@ export default function Home() {
 
   return (
     <section
-      className="flex flex-col gap-8 overflow-hidden shadow-xl shadow-slate-900/10 backdrop-blur rounded-[32px]"
+      className="relative flex flex-col gap-8 overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
+      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-violet-500/60 via-indigo-400/40 to-transparent" />
       <div className="scrollbar-dark flex flex-1 flex-col rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:shadow-violet-900/20">
         <div className="flex flex-col gap-6 pb-8">
           <div>
@@ -244,19 +253,29 @@ export default function Home() {
                 className="w-full min-h-[52px] rounded-[20px] border border-border bg-card px-4 py-3 text-base text-foreground shadow-inner shadow-slate-950/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/70 dark:text-white dark:shadow-violet-600/10 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
               />
             </label>
-            <div className="flex flex-wrap items-center justify-between gap-4">
-              <div className="flex max-w-xl flex-wrap gap-3">
+            <div className="flex items-center justify-between gap-4">
+              <div className="grid w-full max-w-3xl grid-cols-3 gap-3">
                 {suggestions.map((item) => (
-                  <Button
-                    key={item}
-                    type="button"
-                    variant="outline"
-                    size="sm"
-                    onClick={() => setQuestion(item)}
-                    className="h-auto rounded-full border-border bg-background/70 px-4 py-1.5 text-xs font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
-                  >
-                    {item}
-                  </Button>
+                  <Tooltip key={item}>
+                    <TooltipTrigger asChild>
+                      <Button
+                        type="button"
+                        variant="outline"
+                        size="sm"
+                        onClick={() => setQuestion(item)}
+                        className="chip-pressable h-[32px] w-full items-center justify-start rounded-2xl border-border bg-background/70 px-4 text-left text-sm font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
+                      >
+                        <span className="block w-full truncate">{item}</span>
+                      </Button>
+                    </TooltipTrigger>
+                    <TooltipContent
+                      side="top"
+                      sideOffset={6}
+                      className="max-w-xs"
+                    >
+                      {item}
+                    </TooltipContent>
+                  </Tooltip>
                 ))}
               </div>
               <Button
@@ -264,7 +283,9 @@ export default function Home() {
                 disabled={isLoading}
                 variant="cta"
                 size="pill"
-                className="font-semibold"
+                className={`font-semibold ${
+                  isLoading ? "" : "animate-glow-soft"
+                }`}
               >
                 {isLoading ? t.qa.processing : t.qa.ask}
               </Button>
@@ -294,7 +315,7 @@ export default function Home() {
                 .map((item) => (
                   <article
                     key={item.id}
-                    className="space-y-4 rounded-[28px] border border-border bg-card p-6 shadow-inner shadow-slate-900/5 dark:border-white/10 dark:bg-slate-950/70 dark:shadow-slate-950/40"
+                    className="space-y-4 rounded-[28px] border border-border bg-card p-6 shadow-inner shadow-slate-900/5 transition duration-200 animate-slide-up dark:border-white/10 dark:bg-slate-950/70 dark:shadow-slate-950/40"
                   >
                     <div>
                       <p className="text-xs uppercase tracking-[0.3em] text-muted-foreground">
