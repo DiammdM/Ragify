@@ -14,6 +14,7 @@ type ParsedPayload = {
   ollamaHost: string | null;
   ollamaPort: string | null;
   ollamaModel: string | null;
+  quickPrompts: string[];
 };
 
 const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
@@ -51,6 +52,16 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
       ? (payload as { ollamaModel: string }).ollamaModel.trim()
       : "";
 
+  const quickPromptsRaw =
+    "quickPrompts" in payload && Array.isArray((payload as { quickPrompts?: unknown }).quickPrompts)
+      ? ((payload as { quickPrompts: unknown[] }).quickPrompts ?? [])
+      : [];
+
+  const quickPrompts = quickPromptsRaw
+    .slice(0, 3)
+    .map((value) => (typeof value === "string" ? value.trim() : ""))
+    .map((value) => value || "");
+
   if (!MODEL_KEY_SET.has(modelKey as ModelKey)) {
     return { error: "Invalid model key." };
   }
@@ -66,6 +77,7 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
     ollamaHost: ollamaHost || null,
     ollamaPort: ollamaPort || null,
     ollamaModel: ollamaModel || null,
+    quickPrompts,
   };
 };
 
@@ -82,7 +94,18 @@ export async function GET(request: NextRequest) {
       where: { userId },
     });
 
-    return NextResponse.json({ settings: settings ?? null });
+    return NextResponse.json({
+      settings: settings
+        ? {
+            ...settings,
+            quickPrompts: [
+              settings.quickPrompt1 ?? "",
+              settings.quickPrompt2 ?? "",
+              settings.quickPrompt3 ?? "",
+            ],
+          }
+        : null,
+    });
   } catch (error) {
     console.error("Failed to load model settings", error);
     return NextResponse.json(
@@ -123,6 +146,9 @@ export async function POST(request: NextRequest) {
         ollamaHost: isOllama ? parsed.ollamaHost : null,
         ollamaPort: isOllama ? parsed.ollamaPort : null,
         ollamaModel: isOllama ? parsed.ollamaModel : null,
+        quickPrompt1: parsed.quickPrompts[0] ?? "",
+        quickPrompt2: parsed.quickPrompts[1] ?? "",
+        quickPrompt3: parsed.quickPrompts[2] ?? "",
       },
       create: {
         userId,
@@ -132,12 +158,24 @@ export async function POST(request: NextRequest) {
         ollamaHost: isOllama ? parsed.ollamaHost : null,
         ollamaPort: isOllama ? parsed.ollamaPort : null,
         ollamaModel: isOllama ? parsed.ollamaModel : null,
+        quickPrompt1: parsed.quickPrompts[0] ?? "",
+        quickPrompt2: parsed.quickPrompts[1] ?? "",
+        quickPrompt3: parsed.quickPrompts[2] ?? "",
       },
     });
 
     primeUserModelSettingsCache(userId, settings);
 
-    return NextResponse.json({ settings });
+    return NextResponse.json({
+      settings: {
+        ...settings,
+        quickPrompts: [
+          settings.quickPrompt1 ?? "",
+          settings.quickPrompt2 ?? "",
+          settings.quickPrompt3 ?? "",
+        ],
+      },
+    });
   } catch (error) {
     console.error("Failed to save model settings", error);
     return NextResponse.json(

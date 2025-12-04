@@ -48,6 +48,9 @@ model UserModelSettings {
   ollamaHost  String?
   ollamaPort  String?
   ollamaModel String?
+  quickPrompt1 String?
+  quickPrompt2 String?
+  quickPrompt3 String?
   createdAt   DateTime @default(now()) @map("createTime")
   updatedAt   DateTime @updatedAt @map("updateTime")
 

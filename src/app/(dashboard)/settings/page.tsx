@@ -22,6 +22,7 @@ type SettingsRecord = {
   ollamaHost: string | null;
   ollamaPort: string | null;
   ollamaModel: string | null;
+  quickPrompts?: string[];
 };
 
 export default function SettingsPage() {
@@ -39,6 +40,7 @@ export default function SettingsPage() {
   const [ollamaHost, setOllamaHost] = useState("127.0.0.1");
   const [ollamaPort, setOllamaPort] = useState("11434");
   const [ollamaModel, setOllamaModel] = useState("gpt-oss:20b");
+  const [quickPrompts, setQuickPrompts] = useState<string[]>(["", "", ""]);
 
   const modelOptions = useMemo(
     () =>
@@ -50,6 +52,15 @@ export default function SettingsPage() {
   );
 
   const showOllamaFields = selectedModel === "ollama";
+
+  const normalizePrompts = (values: unknown[]): string[] => {
+    const base = ["", "", ""];
+    for (let i = 0; i < 3; i += 1) {
+      const value = values[i];
+      base[i] = typeof value === "string" ? value : "";
+    }
+    return base;
+  };
 
   useEffect(() => {
     let isMounted = true;
@@ -75,6 +86,11 @@ export default function SettingsPage() {
           setOllamaHost(data.settings.ollamaHost ?? "127.0.0.1");
           setOllamaPort(data.settings.ollamaPort ?? "11434");
           setOllamaModel(data.settings.ollamaModel ?? "gpt-oss:20b");
+          if (Array.isArray(data.settings.quickPrompts)) {
+            setQuickPrompts(
+              normalizePrompts(data.settings.quickPrompts as unknown[])
+            );
+          }
         }
         setLoadError(null);
       } catch (error) {
@@ -114,6 +130,7 @@ export default function SettingsPage() {
           ollamaHost,
           ollamaPort,
           ollamaModel,
+          quickPrompts,
         }),
       });
 
@@ -133,6 +150,11 @@ export default function SettingsPage() {
         setOllamaHost(data.settings.ollamaHost ?? "127.0.0.1");
         setOllamaPort(data.settings.ollamaPort ?? "11434");
         setOllamaModel(data.settings.ollamaModel ?? "gpt-oss:20b");
+        if (Array.isArray(data.settings.quickPrompts)) {
+          setQuickPrompts(
+            normalizePrompts(data.settings.quickPrompts as unknown[])
+          );
+        }
       }
 
       setFeedback({ message: t.settings.saved, isError: false });
@@ -281,6 +303,32 @@ export default function SettingsPage() {
         </div>
 
         <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+          <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-5 dark:border-white/15 dark:bg-slate-900/70">
+            <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+              {t.settings.quickPrompts.title}
+            </p>
+            <p className="text-xs text-muted-foreground">
+              {t.settings.quickPrompts.helper}
+            </p>
+            <div className="grid gap-3">
+              {quickPrompts.map((value, index) => (
+                <Input
+                  key={index}
+                  type="text"
+                  value={value}
+                  onChange={(event) => {
+                    const next = [...quickPrompts];
+                    next[index] = event.target.value;
+                    setQuickPrompts(next);
+                  }}
+                  placeholder={t.settings.quickPrompts.placeholders[index] ?? ""}
+                  disabled={isSaving}
+                  aria-label={`${t.settings.quickPrompts.title} #${index + 1}`}
+                />
+              ))}
+            </div>
+          </div>
+
           <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-5 text-sm text-foreground dark:border-white/15 dark:bg-slate-900/70">
             <p>
               {t.settings.modelLabel}:{" "}

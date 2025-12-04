@@ -122,12 +122,17 @@ export default function Home() {
   const [question, setQuestion] = useState("");
   const [history, setHistory] = useState<Interaction[]>([]);
   const [isLoading, setIsLoading] = useState(false);
+  const [customPrompts, setCustomPrompts] = useState<string[] | null>(null);
   const historyRef = useRef<HTMLDivElement | null>(null);
 
-  const suggestions = useMemo(
-    () => t.qa.quickQuestions.slice(0, 3),
-    [t.qa.quickQuestions]
-  );
+  const suggestions = useMemo(() => {
+    if (!customPrompts) {
+      return [];
+    }
+    return customPrompts
+      .slice(0, 3)
+      .map((item) => (typeof item === "string" ? item : ""));
+  }, [customPrompts]);
   const timeFormatter = useMemo(
     () =>
       new Intl.DateTimeFormat(language === "en" ? "en-US" : "zh-CN", {
@@ -144,6 +149,34 @@ export default function Home() {
     if (!node) return;
     node.scrollTo({ top: 0, behavior: "smooth" });
   }, [history]);
+
+  useEffect(() => {
+    const loadPrompts = async () => {
+      try {
+        const response = await fetch("/api/settings/model", {
+          method: "GET",
+        });
+        if (!response.ok) {
+          return;
+        }
+        const data: { settings?: { quickPrompts?: unknown } | null } =
+          await response.json();
+        if (data.settings && Array.isArray(data.settings.quickPrompts)) {
+          const normalized = data.settings.quickPrompts
+            .slice(0, 3)
+            .map((item) => (typeof item === "string" ? item : ""))
+            .map((item) => item ?? "");
+          if (normalized.some((item) => item.trim().length > 0)) {
+            setCustomPrompts(normalized);
+          }
+        }
+      } catch (error) {
+        console.error("Failed to load quick prompts", error);
+      }
+    };
+
+    void loadPrompts();
+  }, []);
 
   const handleSubmit = async (event: FormEvent<HTMLFormElement>) => {
     event.preventDefault();
@@ -254,30 +287,32 @@ export default function Home() {
               />
             </label>
             <div className="flex items-center justify-between gap-4">
-              <div className="grid w-full max-w-3xl grid-cols-3 gap-3">
-                {suggestions.map((item) => (
-                  <Tooltip key={item}>
-                    <TooltipTrigger asChild>
-                      <Button
-                        type="button"
-                        variant="outline"
-                        size="sm"
-                        onClick={() => setQuestion(item)}
-                        className="chip-pressable h-[32px] w-full items-center justify-start rounded-2xl border-border bg-background/70 px-4 text-left text-sm font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
+              {suggestions.length > 0 && (
+                <div className="grid w-full max-w-3xl grid-cols-3 gap-3">
+                  {suggestions.map((item, index) => (
+                    <Tooltip key={`${item}-${index}`}>
+                      <TooltipTrigger asChild>
+                        <Button
+                          type="button"
+                          variant="outline"
+                          size="sm"
+                          onClick={() => setQuestion(item)}
+                          className="chip-pressable h-[42px] w-full items-center justify-start rounded-2xl border-border bg-background/70 px-4 text-left text-sm font-semibold text-foreground/80 shadow-sm transition hover:border-ring hover:bg-muted hover:text-foreground dark:border-white/10 dark:bg-white/5 dark:text-white/80 dark:hover:border-violet-300/70 dark:hover:text-white"
+                        >
+                          <span className="block w-full truncate">{item}</span>
+                        </Button>
+                      </TooltipTrigger>
+                      <TooltipContent
+                        side="top"
+                        sideOffset={6}
+                        className="max-w-xs"
                       >
-                        <span className="block w-full truncate">{item}</span>
-                      </Button>
-                    </TooltipTrigger>
-                    <TooltipContent
-                      side="top"
-                      sideOffset={6}
-                      className="max-w-xs"
-                    >
-                      {item}
-                    </TooltipContent>
-                  </Tooltip>
-                ))}
-              </div>
+                        {item}
+                      </TooltipContent>
+                    </Tooltip>
+                  ))}
+                </div>
+              )}
               <Button
                 type="submit"
                 disabled={isLoading}

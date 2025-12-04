@@ -52,11 +52,11 @@ const translations = {
       scoreLabel: "Score",
       chunkLabel: "Chunk",
       emptyChunk: "This chunk did not contain any extracted text.",
-      quickQuestions: [
-        "What onboarding steps should a new customer follow?",
-        "Summarize the key clauses in the enterprise agreement.",
-        "How can we escalate a P1 support ticket?",
-      ],
+      // quickQuestions: [
+      //   "What onboarding steps should a new customer follow?",
+      //   "Summarize the key clauses in the enterprise agreement.",
+      //   "How can we escalate a P1 support ticket?",
+      // ],
       historyLabel: "Conversation history",
       note: "Tip: tune chunk size and model in Settings after indexing documents.",
     },
@@ -163,6 +163,12 @@ const translations = {
         en: "English",
         zh: "简体中文",
       },
+      quickPrompts: {
+        title: "Q&A quick prompts",
+        helper:
+          "Shown on the Q&A console and stays the same regardless of interface language.",
+        placeholders: ["First prompt", "Second prompt", "Third prompt"],
+      },
     },
     toasts: {
       deleted: "Document deleted.",
@@ -233,11 +239,6 @@ const translations = {
       scoreLabel: "相似度",
       chunkLabel: "分片",
       emptyChunk: "该分片没有可供展示的文本。",
-      quickQuestions: [
-        "新客户需要完成哪些上手步骤？",
-        "请概述企业协议的关键条款。",
-        "如何升级 P1 级别的支持工单？",
-      ],
       historyLabel: "会话记录",
       note: "提示：完成资料索引后，可在设置中调整分片大小和模型。",
     },
@@ -256,11 +257,6 @@ const translations = {
       referencesHint: "助手会在回复中引用最多 3 个分片。",
       referencesEmpty: "发送消息后，会在此看到引用内容。",
       note: "每次回复会用最新一轮检索，并在上下文长度内保留近期对话。",
-      quickPrompts: [
-        "最新的政策更新有哪些变化？",
-        "最近的支持升级情况如何？",
-        "为客户的入门问题写一份回复。",
-      ],
     },
     library: {
       title: "资料管理",
@@ -339,6 +335,11 @@ const translations = {
       languageOptions: {
         en: "English",
         zh: "简体中文",
+      },
+      quickPrompts: {
+        title: "问答提示词",
+        helper: "用于问答控制台，语言切换时仍显示你输入的内容。",
+        placeholders: ["提示词 1", "提示词 2", "提示词 3"],
       },
     },
     toasts: {
