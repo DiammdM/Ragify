@@ -1,9 +1,18 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { ensureAdmin } from "@/lib/auth/user";
 
 export const runtime = "nodejs";
 
-export async function GET() {
+export async function GET(request: NextRequest) {
+  const adminCheck = await ensureAdmin(request.cookies);
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: "Forbidden" },
+      { status: adminCheck.status }
+    );
+  }
+
   const documents = await prisma.libraryDocument.findMany({
     orderBy: {
       uploadedAt: "desc",

@@ -2,12 +2,20 @@
 
 import Link from "next/link";
 import { usePathname, useRouter } from "next/navigation";
-import { PropsWithChildren, useCallback, useMemo, useState } from "react";
+import {
+  PropsWithChildren,
+  useCallback,
+  useEffect,
+  useMemo,
+  useState,
+} from "react";
 import { Languages, Moon, Sun } from "lucide-react";
 import clsx from "clsx";
 import { Button } from "@/components/ui/button";
 import { Language, useLanguage } from "./language-provider";
 import { useTheme } from "./theme-provider";
+
+type UserRole = "user" | "admin";
 
 export function AppShell({ children }: PropsWithChildren) {
   const { t, language, setLanguage } = useLanguage();
@@ -16,16 +24,63 @@ export function AppShell({ children }: PropsWithChildren) {
   const pathname = usePathname();
   const router = useRouter();
   const [isLoggingOut, setIsLoggingOut] = useState(false);
+  const [userRole, setUserRole] = useState<UserRole>("user");
+  const [roleLoaded, setRoleLoaded] = useState(false);
+
+  useEffect(() => {
+    let cancelled = false;
+    const fetchRole = async () => {
+      try {
+        const response = await fetch("/api/auth/me");
+        if (!response.ok) {
+          return;
+        }
+        const data: { user?: { role?: string } | null } = await response.json();
+        const role =
+          data.user && (data.user.role === "admin" || data.user.role === "user")
+            ? (data.user.role as UserRole)
+            : "user";
+        if (!cancelled) {
+          setUserRole(role);
+        }
+      } catch (error) {
+        console.error("Failed to load current user role", error);
+      } finally {
+        if (!cancelled) {
+          setRoleLoaded(true);
+        }
+      }
+    };
+    void fetchRole();
+    return () => {
+      cancelled = true;
+    };
+  }, []);
 
   const navItems = useMemo(
     () => [
-      { href: "/", label: t.nav.qa },
-      { href: "/chat", label: t.nav.chat },
-      { href: "/library", label: t.nav.library },
-      { href: "/settings", label: t.nav.settings },
+      { href: "/", label: t.nav.qa, roles: ["user", "admin"] as UserRole[] },
+      { href: "/chat", label: t.nav.chat, roles: ["user", "admin"] },
+      { href: "/library", label: t.nav.library, roles: ["admin"] as UserRole[] },
+      { href: "/settings", label: t.nav.settings, roles: ["admin"] as UserRole[] },
+      { href: "/users", label: t.nav.users, roles: ["admin"] as UserRole[] },
     ],
     [t]
   );
+
+  const allowedNavItems = useMemo(
+    () => navItems.filter((item) => item.roles.includes(userRole)),
+    [navItems, userRole]
+  );
+
+  useEffect(() => {
+    if (!roleLoaded) return;
+    const allowedPaths = new Set(allowedNavItems.map((item) => item.href));
+    if (!allowedPaths.has(pathname)) {
+      const fallback = allowedNavItems[0]?.href ?? "/";
+      router.replace(fallback);
+    }
+  }, [allowedNavItems, pathname, roleLoaded, router]);
 
   const handleLogout = useCallback(async () => {
     if (isLoggingOut) {
@@ -157,7 +212,7 @@ export function AppShell({ children }: PropsWithChildren) {
               {t.layout.menuLabel}
             </p>
             <nav className="space-y-2">
-              {navItems.map((item) => {
+              {allowedNavItems.map((item) => {
                 const isActive = pathname === item.href;
                 return (
                   <Link

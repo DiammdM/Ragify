@@ -1,10 +1,11 @@
 import { mkdir, writeFile } from "fs/promises";
 import path from "path";
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { randomUUID } from "node:crypto";
 import { Buffer } from "node:buffer";
 import { prisma } from "@/lib/prisma";
 import { isAllowedExtension } from "@/lib/library/file-types";
+import { ensureAdmin } from "@/lib/auth/user";
 
 const UPLOAD_ROOT = path.join(process.cwd(), "data", "uploads");
 
@@ -17,7 +18,15 @@ const toSafeRelativePath = (filename: string, uniqueSuffix: string) => {
 
 export const runtime = "nodejs";
 
-export async function POST(request: Request) {
+export async function POST(request: NextRequest) {
+  const adminCheck = await ensureAdmin(request.cookies);
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: "Forbidden" },
+      { status: adminCheck.status }
+    );
+  }
+
   const formData = await request.formData();
   const entries = formData.getAll("files");
 

@@ -62,6 +62,7 @@ export async function POST(request: Request) {
     data: {
       name: parsed.name,
       password: hashed,
+      role: "user",
     },
   });
 
@@ -69,6 +70,7 @@ export async function POST(request: Request) {
     user: {
       id: user.id,
       name: user.name,
+      role: user.role ?? "user",
       createdAt: user.createdAt,
     },
   });

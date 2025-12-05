@@ -1,17 +1,26 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import path from "path";
 import { unlink } from "fs/promises";
 import { prisma } from "@/lib/prisma";
 import { deleteExistingVectors } from "@/server/library/indexer";
+import { ensureAdmin } from "@/lib/auth/user";
 
 const VALID_STATUSES = new Set(["uploaded", "indexing", "indexed"]);
 
 export const runtime = "nodejs";
 
 export async function PATCH(
-  request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const adminCheck = await ensureAdmin(request.cookies);
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: "Forbidden" },
+      { status: adminCheck.status }
+    );
+  }
+
   const { id } = await params;
   let payload: unknown;
 
@@ -84,9 +93,17 @@ export async function PATCH(
 }
 
 export async function DELETE(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const adminCheck = await ensureAdmin(request.cookies);
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: "Forbidden" },
+      { status: adminCheck.status }
+    );
+  }
+
   const { id } = await params;
 
   try {

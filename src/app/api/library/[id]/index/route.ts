@@ -1,7 +1,8 @@
-import { NextResponse } from "next/server";
+import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { indexDocument } from "@/server/library/indexer";
 import type { IndexingStage } from "@/server/library/indexing-stages";
+import { ensureAdmin } from "@/lib/auth/user";
 
 const INITIAL_STAGE: IndexingStage = "extracting";
 const INITIAL_PROGRESS = 0;
@@ -9,9 +10,17 @@ const INITIAL_PROGRESS = 0;
 export const runtime = "nodejs";
 
 export async function POST(
-  _request: Request,
+  request: NextRequest,
   { params }: { params: Promise<{ id: string }> }
 ) {
+  const adminCheck = await ensureAdmin(request.cookies);
+  if (!adminCheck.ok) {
+    return NextResponse.json(
+      { error: "Forbidden" },
+      { status: adminCheck.status }
+    );
+  }
+
   const { id } = await params;
 
   try {

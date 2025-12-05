@@ -23,38 +23,45 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
   }
 
   const modelKey =
-    "modelKey" in payload && typeof (payload as { modelKey?: unknown }).modelKey === "string"
+    "modelKey" in payload &&
+    typeof (payload as { modelKey?: unknown }).modelKey === "string"
       ? (payload as { modelKey: string }).modelKey
       : "";
 
   const chunkSizeRaw =
-    "chunkSize" in payload && typeof (payload as { chunkSize?: unknown }).chunkSize === "number"
+    "chunkSize" in payload &&
+    typeof (payload as { chunkSize?: unknown }).chunkSize === "number"
       ? (payload as { chunkSize: number }).chunkSize
       : Number.NaN;
 
   const apiKey =
-    "apiKey" in payload && typeof (payload as { apiKey?: unknown }).apiKey === "string"
+    "apiKey" in payload &&
+    typeof (payload as { apiKey?: unknown }).apiKey === "string"
       ? (payload as { apiKey: string }).apiKey.trim()
       : "";
 
   const ollamaHost =
-    "ollamaHost" in payload && typeof (payload as { ollamaHost?: unknown }).ollamaHost === "string"
+    "ollamaHost" in payload &&
+    typeof (payload as { ollamaHost?: unknown }).ollamaHost === "string"
       ? (payload as { ollamaHost: string }).ollamaHost.trim()
       : "";
 
   const ollamaPort =
-    "ollamaPort" in payload && typeof (payload as { ollamaPort?: unknown }).ollamaPort === "string"
+    "ollamaPort" in payload &&
+    typeof (payload as { ollamaPort?: unknown }).ollamaPort === "string"
       ? (payload as { ollamaPort: string }).ollamaPort.trim()
       : "";
 
   const ollamaModel =
-    "ollamaModel" in payload && typeof (payload as { ollamaModel?: unknown }).ollamaModel === "string"
+    "ollamaModel" in payload &&
+    typeof (payload as { ollamaModel?: unknown }).ollamaModel === "string"
       ? (payload as { ollamaModel: string }).ollamaModel.trim()
       : "";
 
   const quickPromptsRaw =
-    "quickPrompts" in payload && Array.isArray((payload as { quickPrompts?: unknown }).quickPrompts)
-      ? ((payload as { quickPrompts: unknown[] }).quickPrompts ?? [])
+    "quickPrompts" in payload &&
+    Array.isArray((payload as { quickPrompts?: unknown }).quickPrompts)
+      ? (payload as { quickPrompts: unknown[] }).quickPrompts ?? []
       : [];
 
   const quickPrompts = quickPromptsRaw
@@ -66,7 +73,11 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
     return { error: "Invalid model key." };
   }
 
-  if (!Number.isFinite(chunkSizeRaw) || chunkSizeRaw < 200 || chunkSizeRaw > 2000) {
+  if (
+    !Number.isFinite(chunkSizeRaw) ||
+    chunkSizeRaw < 200 ||
+    chunkSizeRaw > 2000
+  ) {
     return { error: "Chunk size must be between 200 and 2000." };
   }
 

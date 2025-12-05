@@ -31,6 +31,7 @@ const translations = {
       chat: "Chat",
       library: "Knowledge Library",
       settings: "Settings",
+      users: "Users",
     },
     qa: {
       title: "Q&A Console",
@@ -170,6 +171,28 @@ const translations = {
         placeholders: ["First prompt", "Second prompt", "Third prompt"],
       },
     },
+    users: {
+      title: "User management",
+      subtitle: "Manage accounts and assign roles.",
+      table: {
+        name: "User",
+        role: "Role",
+        created: "Created",
+        actions: "Actions",
+      },
+      roles: {
+        user: "User",
+        admin: "Admin",
+      },
+      save: "Update role",
+      saving: "Saving...",
+      loadError: "Unable to load users.",
+      updateError: "Failed to update role.",
+      success: "Role updated.",
+      selfNote: "You cannot change your own role here.",
+      delete: "Delete",
+      deleteError: "Failed to delete user.",
+    },
     toasts: {
       deleted: "Document deleted.",
       indexing: "Indexing started.",
@@ -219,6 +242,7 @@ const translations = {
       chat: "聊天",
       library: "资料管理",
       settings: "设置",
+      users: "用户管理",
     },
     qa: {
       title: "问答控制台",
@@ -341,6 +365,28 @@ const translations = {
         helper: "用于问答控制台，语言切换时仍显示你输入的内容。",
         placeholders: ["提示词 1", "提示词 2", "提示词 3"],
       },
+    },
+    users: {
+      title: "用户管理",
+      subtitle: "管理账号并分配角色。",
+      table: {
+        name: "用户",
+        role: "角色",
+        created: "创建时间",
+        actions: "操作",
+      },
+      roles: {
+        user: "普通用户",
+        admin: "管理员",
+      },
+      save: "更新角色",
+      saving: "保存中...",
+      loadError: "无法加载用户列表。",
+      updateError: "更新角色失败。",
+      success: "已更新角色。",
+      selfNote: "不能在此修改自己的角色。",
+      delete: "删除",
+      deleteError: "删除用户失败。",
     },
     toasts: {
       deleted: "资料已删除。",
