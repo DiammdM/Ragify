@@ -20,7 +20,7 @@ model User {
   password  String
   createdAt DateTime @default(now()) @map("createTime")
   updatedAt DateTime @updatedAt @map("updateTime")
-  modelSettings UserModelSettings?
+  role      String
 }
 
 model LibraryDocument {
@@ -38,10 +38,8 @@ model LibraryDocument {
   embeddingModel String?
 }
 
-model UserModelSettings {
+model ModelSettings {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
-  userId      String   @db.ObjectId
-  user        User     @relation(fields: [userId], references: [id])
   modelKey    String
   apiKey      String?
   chunkSize   Int
@@ -53,6 +51,4 @@ model UserModelSettings {
   quickPrompt3 String?
   createdAt   DateTime @default(now()) @map("createTime")
   updatedAt   DateTime @updatedAt @map("updateTime")
-
-  @@unique([userId])
 }

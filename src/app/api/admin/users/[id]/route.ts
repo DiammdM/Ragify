@@ -24,14 +24,13 @@ export async function DELETE(
       return NextResponse.json({ error: "User not found" }, { status: 404 });
     }
 
-    if (user.id === adminCheck.user.id) {
+    if (user.id === adminCheck.user?.id) {
       return NextResponse.json(
         { error: "You cannot delete your own account." },
         { status: 400 }
       );
     }
 
-    await prisma.userModelSettings.deleteMany({ where: { userId: id } });
     await prisma.user.delete({ where: { id } });
 
     return NextResponse.json({ success: true });

@@ -1,20 +1,19 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import { searchLibraryChunks } from "@/server/library/search";
 import { rerankChunks } from "@/server/rerank/cross-encoder";
 import {
   generateAnswerFromChunks,
   generateDirectAnswer,
 } from "@/server/answers/generator";
-import { getSessionUserId } from "@/lib/auth/session";
-import { getUserModelSettingsCached } from "@/server/models/user-settings";
+import { getModelSettingsCached } from "@/server/models/user-settings";
 
 export const runtime = "nodejs";
 
 const MIN_CROSS_SCORE = 0.35;
 
-const filterRelevantChunks = (chunks: Awaited<ReturnType<typeof rerankChunks>>) =>
-  chunks.filter((chunk) => (chunk.crossScore ?? 0) >= MIN_CROSS_SCORE);
+const filterRelevantChunks = (
+  chunks: Awaited<ReturnType<typeof rerankChunks>>
+) => chunks.filter((chunk) => (chunk.crossScore ?? 0) >= MIN_CROSS_SCORE);
 
 export async function POST(request: Request) {
   let payload: unknown;
@@ -41,11 +40,8 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cookieStore = await cookies();
-    const userId = getSessionUserId(cookieStore);
-    const settings = userId
-      ? await getUserModelSettingsCached(userId)
-      : null;
+    // TODO  缓存key不是userid了
+    const settings = await getModelSettingsCached();
 
     if (!settings) {
       return NextResponse.json(

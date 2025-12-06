@@ -131,7 +131,8 @@ export default function Home() {
     }
     return customPrompts
       .slice(0, 3)
-      .map((item) => (typeof item === "string" ? item : ""));
+      .map((item) => (typeof item === "string" ? item : ""))
+      .filter((item) => item.trim().length > 0);
   }, [customPrompts]);
   const timeFormatter = useMemo(
     () =>
@@ -286,7 +287,11 @@ export default function Home() {
                 className="w-full min-h-[52px] rounded-[20px] border border-border bg-card px-4 py-3 text-base text-foreground shadow-inner shadow-slate-950/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/70 dark:text-white dark:shadow-violet-600/10 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
               />
             </label>
-            <div className="flex items-center justify-between gap-4">
+            <div
+              className={`flex items-center gap-4 ${
+                suggestions.length > 0 ? "justify-between" : "justify-end"
+              }`}
+            >
               {suggestions.length > 0 && (
                 <div className="grid w-full max-w-3xl grid-cols-3 gap-3">
                   {suggestions.map((item, index) => (

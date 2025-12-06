@@ -1,35 +1,32 @@
 import { prisma } from "@/lib/prisma";
-import type { UserModelSettings } from "@prisma/client";
+import type { ModelSettings } from "@prisma/client";
 
 type CachedEntry = {
-  value: UserModelSettings | null;
+  value: ModelSettings | null;
   expiresAt: number;
 };
+const cacheKey = "modelSettings";
 
 const CACHE_TTL_MS = 1000 * 60 * 5; // 5 minutes
 const cache = new Map<string, CachedEntry>();
 
-const setCache = (userId: string, value: UserModelSettings | null) => {
-  cache.set(userId, { value, expiresAt: Date.now() + CACHE_TTL_MS });
+const setCache = (id: string, value: ModelSettings | null) => {
+  cache.set(id, { value, expiresAt: Date.now() + CACHE_TTL_MS });
 };
 
-export const getUserModelSettingsCached = async (userId: string) => {
-  const cached = cache.get(userId);
+export const getModelSettingsCached = async () => {
+  const cached = cache.get(cacheKey);
   if (cached && cached.expiresAt > Date.now()) {
     return cached.value;
   }
 
-  const value = await prisma.userModelSettings.findUnique({
-    where: { userId },
-  });
+  // TODO 需要验证
+  const value = await prisma.modelSettings.findFirst();
 
-  setCache(userId, value);
+  setCache(cacheKey, value);
   return value;
 };
 
-export const primeUserModelSettingsCache = (
-  userId: string,
-  value: UserModelSettings | null
-) => {
-  setCache(userId, value);
+export const primeModelSettingsCache = (value: ModelSettings | null) => {
+  setCache(cacheKey, value);
 };

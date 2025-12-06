@@ -8,7 +8,7 @@ export type GenerationMessage = {
 };
 
 export type ModelSettings = {
-  modelKey: "llama" | "qwen" | "gemma" | "ollama";
+  modelKey: string | null;
   apiKey?: string | null;
   chunkSize?: number | null;
   ollamaHost?: string | null;

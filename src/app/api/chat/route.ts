@@ -1,5 +1,4 @@
 import { NextResponse } from "next/server";
-import { cookies } from "next/headers";
 import {
   generateChatAnswerFromChunks,
   generateDirectAnswer,
@@ -7,8 +6,7 @@ import {
 } from "@/server/answers/generator";
 import { searchLibraryChunks } from "@/server/library/search";
 import { rerankChunks } from "@/server/rerank/cross-encoder";
-import { getSessionUserId } from "@/lib/auth/session";
-import { getUserModelSettingsCached } from "@/server/models/user-settings";
+import { getModelSettingsCached } from "@/server/models/user-settings";
 
 export const runtime = "nodejs";
 
@@ -19,8 +17,9 @@ type IncomingMessage = {
 
 const MIN_CROSS_SCORE = 0.35;
 
-const filterRelevantChunks = (chunks: Awaited<ReturnType<typeof rerankChunks>>) =>
-  chunks.filter((chunk) => (chunk.crossScore ?? 0) >= MIN_CROSS_SCORE);
+const filterRelevantChunks = (
+  chunks: Awaited<ReturnType<typeof rerankChunks>>
+) => chunks.filter((chunk) => (chunk.crossScore ?? 0) >= MIN_CROSS_SCORE);
 
 const sanitizeMessages = (payload: unknown): ConversationTurn[] => {
   if (
@@ -72,11 +71,7 @@ export async function POST(request: Request) {
   }
 
   try {
-    const cookieStore = await cookies();
-    const userId = getSessionUserId(cookieStore);
-    const settings = userId
-      ? await getUserModelSettingsCached(userId)
-      : null;
+    const settings = await getModelSettingsCached();
 
     if (!settings) {
       return NextResponse.json(

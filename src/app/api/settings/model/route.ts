@@ -1,7 +1,6 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { getSessionUserId } from "@/lib/auth/session";
-import { primeUserModelSettingsCache } from "@/server/models/user-settings";
+import { primeModelSettingsCache } from "@/server/models/user-settings";
 
 const MODEL_KEYS = ["llama", "qwen", "gemma", "ollama"] as const;
 type ModelKey = (typeof MODEL_KEYS)[number];
@@ -94,16 +93,9 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
 
 export const runtime = "nodejs";
 
-export async function GET(request: NextRequest) {
-  const userId = getSessionUserId(request.cookies);
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
+export async function GET() {
   try {
-    const settings = await prisma.userModelSettings.findUnique({
-      where: { userId },
-    });
+    const settings = await prisma.modelSettings.findFirst();
 
     return NextResponse.json({
       settings: settings
@@ -127,11 +119,6 @@ export async function GET(request: NextRequest) {
 }
 
 export async function POST(request: NextRequest) {
-  const userId = getSessionUserId(request.cookies);
-  if (!userId) {
-    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
-  }
-
   let payload: unknown;
 
   try {
@@ -148,34 +135,30 @@ export async function POST(request: NextRequest) {
   const isOllama = parsed.modelKey === "ollama";
 
   try {
-    const settings = await prisma.userModelSettings.upsert({
-      where: { userId },
-      update: {
-        modelKey: parsed.modelKey,
-        apiKey: parsed.apiKey,
-        chunkSize: parsed.chunkSize,
-        ollamaHost: isOllama ? parsed.ollamaHost : null,
-        ollamaPort: isOllama ? parsed.ollamaPort : null,
-        ollamaModel: isOllama ? parsed.ollamaModel : null,
-        quickPrompt1: parsed.quickPrompts[0] ?? "",
-        quickPrompt2: parsed.quickPrompts[1] ?? "",
-        quickPrompt3: parsed.quickPrompts[2] ?? "",
-      },
-      create: {
-        userId,
-        modelKey: parsed.modelKey,
-        apiKey: parsed.apiKey,
-        chunkSize: parsed.chunkSize,
-        ollamaHost: isOllama ? parsed.ollamaHost : null,
-        ollamaPort: isOllama ? parsed.ollamaPort : null,
-        ollamaModel: isOllama ? parsed.ollamaModel : null,
-        quickPrompt1: parsed.quickPrompts[0] ?? "",
-        quickPrompt2: parsed.quickPrompts[1] ?? "",
-        quickPrompt3: parsed.quickPrompts[2] ?? "",
-      },
-    });
+    const data = {
+      modelKey: parsed.modelKey,
+      apiKey: parsed.apiKey,
+      chunkSize: parsed.chunkSize,
+      ollamaHost: isOllama ? parsed.ollamaHost : null,
+      ollamaPort: isOllama ? parsed.ollamaPort : null,
+      ollamaModel: isOllama ? parsed.ollamaModel : null,
+      quickPrompt1: parsed.quickPrompts[0] ?? "",
+      quickPrompt2: parsed.quickPrompts[1] ?? "",
+      quickPrompt3: parsed.quickPrompts[2] ?? "",
+    };
 
-    primeUserModelSettingsCache(userId, settings);
+    const existingSettings = await prisma.modelSettings.findFirst();
+
+    const settings = existingSettings
+      ? await prisma.modelSettings.update({
+          where: { id: existingSettings.id },
+          data,
+        })
+      : await prisma.modelSettings.create({
+          data,
+        });
+
+    primeModelSettingsCache(settings);
 
     return NextResponse.json({
       settings: {
