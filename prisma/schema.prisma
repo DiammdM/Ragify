@@ -41,6 +41,7 @@ model LibraryDocument {
 model ModelSettings {
   id          String   @id @default(auto()) @map("_id") @db.ObjectId
   modelKey    String
+  modelName   String?
   apiKey      String?
   chunkSize   Int
   ollamaHost  String?

@@ -13,11 +13,18 @@ import {
 } from "@/components/ui/select";
 
 const MODEL_ORDER = ["openai", "gemini", "deepseek", "ollama"] as const;
+const DEFAULT_MODEL_BY_KEY: Record<(typeof MODEL_ORDER)[number], string> = {
+  openai: "gpt-4o-mini",
+  gemini: "gemini-1.5-flash",
+  deepseek: "deepseek-chat",
+  ollama: "",
+};
 
 type ModelKey = (typeof MODEL_ORDER)[number];
 type SettingsRecord = {
   modelKey: ModelKey;
   apiKey: string | null;
+  modelName: string | null;
   chunkSize: number;
   ollamaHost: string | null;
   ollamaPort: string | null;
@@ -25,10 +32,14 @@ type SettingsRecord = {
   quickPrompts?: string[];
 };
 
+const getDefaultModelName = (modelKey: ModelKey) =>
+  DEFAULT_MODEL_BY_KEY[modelKey] ?? "";
+
 export default function SettingsPage() {
   const { t } = useLanguage();
   const [selectedModel, setSelectedModel] = useState<ModelKey>("openai");
   const [apiKey, setApiKey] = useState("");
+  const [modelName, setModelName] = useState(getDefaultModelName("openai"));
   const [chunkSize, setChunkSize] = useState(800);
   const [feedback, setFeedback] = useState<{
     message: string;
@@ -83,6 +94,12 @@ export default function SettingsPage() {
             setChunkSize(data.settings.chunkSize);
           }
           setApiKey(data.settings.apiKey ?? "");
+          setModelName(
+            data.settings.modelKey === "ollama"
+              ? ""
+              : data.settings.modelName?.trim() ||
+                  getDefaultModelName(data.settings.modelKey)
+          );
           setOllamaHost(data.settings.ollamaHost ?? "127.0.0.1");
           setOllamaPort(data.settings.ollamaPort ?? "11434");
           setOllamaModel(data.settings.ollamaModel ?? "gpt-oss:20b");
@@ -126,6 +143,7 @@ export default function SettingsPage() {
         body: JSON.stringify({
           modelKey: selectedModel,
           apiKey,
+          modelName: showOllamaFields ? null : modelName,
           chunkSize,
           ollamaHost,
           ollamaPort,
@@ -147,6 +165,12 @@ export default function SettingsPage() {
           setChunkSize(data.settings.chunkSize);
         }
         setApiKey(data.settings.apiKey ?? "");
+        setModelName(
+          data.settings.modelKey === "ollama"
+            ? ""
+            : data.settings.modelName?.trim() ||
+                getDefaultModelName(data.settings.modelKey)
+        );
         setOllamaHost(data.settings.ollamaHost ?? "127.0.0.1");
         setOllamaPort(data.settings.ollamaPort ?? "11434");
         setOllamaModel(data.settings.ollamaModel ?? "gpt-oss:20b");
@@ -191,7 +215,15 @@ export default function SettingsPage() {
             </span>
             <Select
               value={selectedModel}
-              onValueChange={(next) => setSelectedModel(next as ModelKey)}
+              onValueChange={(next) => {
+                const key = next as ModelKey;
+                setSelectedModel(key);
+                if (key === "ollama") {
+                  setModelName("");
+                } else {
+                  setModelName(getDefaultModelName(key));
+                }
+              }}
               disabled={isLoading || isSaving}
             >
               <SelectTrigger
@@ -214,22 +246,35 @@ export default function SettingsPage() {
             </Select>
           </label>
 
-          <label
-            className={`block space-y-2 text-sm text-muted-foreground ${
-              showOllamaFields ? "opacity-60" : ""
-            }`}
-          >
-            <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
-              {t.settings.apiLabel}
-            </span>
-            <Input
-              type="password"
-              value={apiKey}
-              onChange={(event) => setApiKey(event.target.value)}
-              placeholder={t.settings.apiPlaceholder}
-              disabled={showOllamaFields || isSaving}
-            />
-          </label>
+          {!showOllamaFields && (
+            <label className={"block space-y-2 text-sm text-muted-foreground"}>
+              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+                {t.settings.apiLabel}
+              </span>
+              <Input
+                type="password"
+                value={apiKey}
+                onChange={(event) => setApiKey(event.target.value)}
+                placeholder={t.settings.apiPlaceholder}
+                disabled={isSaving}
+              />
+            </label>
+          )}
+
+          {!showOllamaFields && (
+            <label className="block space-y-2 text-sm text-muted-foreground">
+              <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
+                {t.settings.modelNameLabel}
+              </span>
+              <Input
+                type="text"
+                value={modelName}
+                onChange={(event) => setModelName(event.target.value)}
+                placeholder={t.settings.modelNamePlaceholder}
+                disabled={isSaving}
+              />
+            </label>
+          )}
 
           <label className="block space-y-2 text-sm text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">

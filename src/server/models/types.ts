@@ -10,6 +10,7 @@ export type GenerationMessage = {
 export type ModelSettings = {
   modelKey: string | null;
   apiKey?: string | null;
+  modelName?: string | null;
   chunkSize?: number | null;
   ollamaHost?: string | null;
   ollamaPort?: string | null;

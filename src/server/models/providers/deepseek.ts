@@ -11,8 +11,8 @@ const toDeepSeekMessages = (request: GenerationRequest) =>
 
 const resolveDeepSeekModel = (request: GenerationRequest) => {
   const configured =
+    request.settings?.modelName?.trim() ||
     request.settings?.ollamaModel?.trim() ||
-    request.settings?.modelKey?.trim() ||
     "";
 
   if (configured && configured !== "deepseek") {

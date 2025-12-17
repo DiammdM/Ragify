@@ -133,6 +133,9 @@ const translations = {
       subtitle: "Configure model access and retrieval preferences.",
       modelLabel: "Generative model",
       modelPlaceholder: "Select a model",
+      modelNameLabel: "Model name",
+      modelNamePlaceholder:
+        "e.g., gpt-4o-mini, gemini-1.5-flash, deepseek-chat",
       models: {
         openai: "OpenAI",
         gemini: "Gemini",
@@ -330,6 +333,8 @@ const translations = {
       subtitle: "配置模型访问与检索参数。",
       modelLabel: "生成模型",
       modelPlaceholder: "请选择模型",
+      modelNameLabel: "模型名称",
+      modelNamePlaceholder: "如 gpt-4o-mini、gemini-1.5-flash、deepseek-chat",
       models: {
         openai: "OpenAI",
         gemini: "Gemini",

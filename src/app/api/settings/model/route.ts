@@ -6,9 +6,17 @@ const MODEL_KEYS = ["openai", "gemini", "deepseek", "ollama"] as const;
 type ModelKey = (typeof MODEL_KEYS)[number];
 const MODEL_KEY_SET = new Set<ModelKey>(MODEL_KEYS);
 
+const DEFAULT_MODEL_BY_KEY: Record<ModelKey, string> = {
+  openai: "gpt-4o-mini",
+  gemini: "gemini-1.5-flash",
+  deepseek: "deepseek-chat",
+  ollama: "",
+};
+
 type ParsedPayload = {
   modelKey: ModelKey;
   apiKey: string | null;
+  modelName: string | null;
   chunkSize: number;
   ollamaHost: string | null;
   ollamaPort: string | null;
@@ -37,6 +45,12 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
     "apiKey" in payload &&
     typeof (payload as { apiKey?: unknown }).apiKey === "string"
       ? (payload as { apiKey: string }).apiKey.trim()
+      : "";
+
+  const modelName =
+    "modelName" in payload &&
+    typeof (payload as { modelName?: unknown }).modelName === "string"
+      ? (payload as { modelName: string }).modelName.trim()
       : "";
 
   const ollamaHost =
@@ -72,6 +86,8 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
     return { error: "Invalid model key." };
   }
 
+  const normalizedModelKey = modelKey as ModelKey;
+
   if (
     !Number.isFinite(chunkSizeRaw) ||
     chunkSizeRaw < 200 ||
@@ -80,9 +96,19 @@ const parsePayload = (payload: unknown): ParsedPayload | { error: string } => {
     return { error: "Chunk size must be between 200 and 2000." };
   }
 
+  const resolvedModelName =
+    normalizedModelKey === "ollama"
+      ? ""
+      : modelName || DEFAULT_MODEL_BY_KEY[normalizedModelKey] || "";
+
+  if (normalizedModelKey !== "ollama" && !resolvedModelName) {
+    return { error: "Model name is required for the selected provider." };
+  }
+
   return {
-    modelKey: modelKey as ModelKey,
+    modelKey: normalizedModelKey,
     apiKey: apiKey || null,
+    modelName: resolvedModelName || null,
     chunkSize: Math.round(chunkSizeRaw),
     ollamaHost: ollamaHost || null,
     ollamaPort: ollamaPort || null,
@@ -138,6 +164,7 @@ export async function POST(request: NextRequest) {
     const data = {
       modelKey: parsed.modelKey,
       apiKey: parsed.apiKey,
+      modelName: isOllama ? null : parsed.modelName,
       chunkSize: parsed.chunkSize,
       ollamaHost: isOllama ? parsed.ollamaHost : null,
       ollamaPort: isOllama ? parsed.ollamaPort : null,

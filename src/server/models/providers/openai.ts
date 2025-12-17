@@ -1,6 +1,7 @@
 import type { GenerationRequest, GenerationResult } from "../types";
 
 const OPENAI_BASE_URL = "https://api.openai.com/v1";
+const DEFAULT_OPENAI_MODEL = "gpt-4o-mini";
 
 const toOpenAIMessages = (request: GenerationRequest) =>
   request.messages.map((message) => ({
@@ -27,8 +28,9 @@ export const callOpenAI = async (
   }
 
   const model =
+    request.settings?.modelName?.trim() ||
     request.settings?.ollamaModel?.trim() ||
-    request.settings?.modelKey?.trim();
+    DEFAULT_OPENAI_MODEL;
 
   if (!model) {
     throw new Error("Model name is not configured for the selected provider.");
