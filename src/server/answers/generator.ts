@@ -30,12 +30,14 @@ const buildMessages = (question: string, chunks: RetrievedChunk[]): GenerationMe
     .join("\n\n");
 
   const system =
-    "You are a retrieval-augmented assistant. Use ONLY the provided sources to answer the user's question. " +
-    "Cite sources using [S1], [S2], etc. If the answer is not in the sources, say you don't know.";
+    "You are a retrieval-augmented assistant. Prefer the provided sources when they directly answer the question. " +
+    "If the sources are irrelevant or do not contain the answer, rely on your own knowledge to respond accurately. " +
+    "Only cite sources using [S1], [S2], etc. when they clearly support the answer.";
 
   const user = [
     `Question: ${question.trim()}`,
     "",
+    "Use the sources below if they are relevant. If not, answer using your own knowledge.",
     "Sources:",
     sources,
     "",
@@ -114,8 +116,9 @@ const buildChatMessages = (
     .join("\n\n");
 
   const system =
-    "You are a retrieval-augmented assistant. Use ONLY the provided sources to answer the user's question. " +
-    "Cite sources using [S1], [S2], etc. If the answer is not in the sources, say you don't know. Keep replies concise.";
+    "You are a retrieval-augmented assistant. Prefer the provided sources when they directly answer the question. " +
+    "If the sources are irrelevant or do not contain the answer, rely on your own knowledge to respond accurately. " +
+    "Only cite sources using [S1], [S2], etc. when they clearly support the answer. Keep replies concise.";
 
   const trimmedHistory = history
     .map((message) => ({
@@ -134,7 +137,7 @@ const buildChatMessages = (
   const userContent = [
     latestUser.content,
     "",
-    "Use only the sources below to answer.",
+    "Use the sources below if they are relevant. If not, answer using your own knowledge.",
     "Sources:",
     sources,
     "",

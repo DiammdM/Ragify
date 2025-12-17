@@ -1,4 +1,4 @@
-export type ModelProvider = "openai" | "ollama";
+export type ModelProvider = "openai" | "deepseek" | "ollama";
 
 export type GenerationMessageRole = "system" | "user" | "assistant";
 

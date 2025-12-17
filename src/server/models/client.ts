@@ -5,15 +5,20 @@ import type {
 } from "./types";
 import { callOpenAI } from "./providers/openai";
 import { callOllama } from "./providers/ollama";
+import { callDeepSeek } from "./providers/deepseek";
 
 const resolveProvider = (request: GenerationRequest): ModelProvider => {
   if (!request.settings) {
     throw new Error("Model settings are required to choose a provider.");
   }
 
-  if (request.settings.modelKey === "ollama") {
-    return "ollama";
+  const key = request.settings.modelKey?.trim();
+  if (!key) {
+    throw new Error("Model key is required to choose a provider.");
   }
+
+  if (key === "ollama") return "ollama";
+  if (key === "deepseek") return "deepseek";
 
   return "openai";
 };
@@ -25,6 +30,10 @@ export const generateWithModel = async (
 
   if (provider === "ollama") {
     return callOllama(request);
+  }
+
+  if (provider === "deepseek") {
+    return callDeepSeek(request);
   }
 
   return callOpenAI(request);

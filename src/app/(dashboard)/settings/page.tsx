@@ -12,7 +12,7 @@ import {
   SelectValue,
 } from "@/components/ui/select";
 
-const MODEL_ORDER = ["llama", "qwen", "gemma", "ollama"] as const;
+const MODEL_ORDER = ["openai", "gemini", "deepseek", "ollama"] as const;
 
 type ModelKey = (typeof MODEL_ORDER)[number];
 type SettingsRecord = {
@@ -27,7 +27,7 @@ type SettingsRecord = {
 
 export default function SettingsPage() {
   const { t } = useLanguage();
-  const [selectedModel, setSelectedModel] = useState<ModelKey>("llama");
+  const [selectedModel, setSelectedModel] = useState<ModelKey>("openai");
   const [apiKey, setApiKey] = useState("");
   const [chunkSize, setChunkSize] = useState(800);
   const [feedback, setFeedback] = useState<{
@@ -321,7 +321,9 @@ export default function SettingsPage() {
                     next[index] = event.target.value;
                     setQuickPrompts(next);
                   }}
-                  placeholder={t.settings.quickPrompts.placeholders[index] ?? ""}
+                  placeholder={
+                    t.settings.quickPrompts.placeholders[index] ?? ""
+                  }
                   disabled={isSaving}
                   aria-label={`${t.settings.quickPrompts.title} #${index + 1}`}
                 />

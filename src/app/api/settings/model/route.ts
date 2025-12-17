@@ -2,7 +2,7 @@ import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
 import { primeModelSettingsCache } from "@/server/models/user-settings";
 
-const MODEL_KEYS = ["llama", "qwen", "gemma", "ollama"] as const;
+const MODEL_KEYS = ["openai", "gemini", "deepseek", "ollama"] as const;
 type ModelKey = (typeof MODEL_KEYS)[number];
 const MODEL_KEY_SET = new Set<ModelKey>(MODEL_KEYS);
 

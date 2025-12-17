@@ -9,7 +9,9 @@ import { getModelSettingsCached } from "@/server/models/user-settings";
 
 export const runtime = "nodejs";
 
-const MIN_CROSS_SCORE = 0.35;
+// Require higher similarity so irrelevant chunks (e.g., math questions with Java docs)
+// fall back to the model's own knowledge instead of forcing RAG-only answers.
+const MIN_CROSS_SCORE = 0.6;
 
 const filterRelevantChunks = (
   chunks: Awaited<ReturnType<typeof rerankChunks>>
