@@ -6,6 +6,7 @@ import type {
 import { callOpenAI } from "./providers/openai";
 import { callOllama } from "./providers/ollama";
 import { callDeepSeek } from "./providers/deepseek";
+import { callGemini } from "./providers/gemini";
 
 const resolveProvider = (request: GenerationRequest): ModelProvider => {
   if (!request.settings) {
@@ -18,6 +19,7 @@ const resolveProvider = (request: GenerationRequest): ModelProvider => {
   }
 
   if (key === "ollama") return "ollama";
+  if (key === "gemini") return "gemini";
   if (key === "deepseek") return "deepseek";
 
   return "openai";
@@ -34,6 +36,10 @@ export const generateWithModel = async (
 
   if (provider === "deepseek") {
     return callDeepSeek(request);
+  }
+
+  if (provider === "gemini") {
+    return callGemini(request);
   }
 
   return callOpenAI(request);
