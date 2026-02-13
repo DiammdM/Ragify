@@ -1,27 +1,27 @@
-# Ragify
+# Ragify 🚀
 
 A Next.js App Router RAG knowledge-base app with multilingual UI, document ingestion, reranking, model switching, and basic authentication/roles.
 
-## Demo
+## Demo 🎬
 
 Demo placeholder: drop your recording link or local asset here (for example, `[Watch the demo](./public/demo.mp4)` or a thumbnail linked to the video).
 
-## Features
+## Features 🧩
 
-- Document library: upload PDFs, Word/Markdown/HTML, spreadsheets, and common code/text files with per-stage indexing progress; originals live in `data/uploads`.
-- RAG chat: uses Qdrant for vector search with optional cross-encoder reranking, returning matched chunks and scores.
-- Model controls: switch between OpenAI, Gemini, DeepSeek, or Ollama, and tune chunk size plus quick prompts.
-- Auth and roles: register/login via cookie sessions; uploads, indexing, and user-role management are admin-only.
-- Localization and theme: English/Chinese copy and light/dark themes built with Tailwind and shadcn/ui.
+- Document library 📚: upload PDFs, Word/Markdown/HTML, spreadsheets, and common code/text files with per-stage indexing progress; originals live in `data/uploads`.
+- RAG chat 💬: uses Qdrant for vector search with optional cross-encoder reranking, returning matched chunks and scores.
+- Model controls 🎛️: switch between OpenAI, Gemini, DeepSeek, or Ollama, and tune chunk size plus quick prompts.
+- Auth and roles 🔐: register/login via cookie sessions; uploads, indexing, and user-role management are admin-only.
+- Localization and theme 🌓: English/Chinese copy and light/dark themes built with Tailwind and shadcn/ui.
 
-## Prerequisites
+## Prerequisites 🔧
 
 - Node.js 18+ and npm.
 - MongoDB connection string (Prisma `DATABASE_URL`).
 - Qdrant instance reachable over HTTP.
 - Optional: huggingface.co access or pre-cached @xenova/transformers models.
 
-## Quickstart
+## Quickstart ⚡
 
 1. Install dependencies:
 
