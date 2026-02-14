@@ -86,7 +86,7 @@ const normalizeResults = (results?: ApiResult[]) => {
   }
   const timestamp = Date.now();
   return results.map((result, index) =>
-    toChunkResult(result, `result-${timestamp}-${index}`)
+    toChunkResult(result, `result-${timestamp}-${index}`),
   );
 };
 
@@ -141,7 +141,7 @@ export default function Home() {
         minute: "2-digit",
         second: "2-digit",
       }),
-    [language]
+    [language],
   );
   const HISTORY_LIMIT = 20;
 
@@ -240,8 +240,8 @@ export default function Home() {
                 answerError,
                 status: "ready",
               }
-            : item
-        )
+            : item,
+        ),
       );
     } catch (error) {
       console.error("Failed to query knowledge base", error);
@@ -255,8 +255,8 @@ export default function Home() {
                 status: "error",
                 error: message,
               }
-            : item
-        )
+            : item,
+        ),
       );
     } finally {
       setIsLoading(false);
@@ -265,7 +265,7 @@ export default function Home() {
 
   return (
     <section
-      className="relative flex flex-col gap-8 overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up"
+      className="relative flex flex-col gap-8 overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-violet-500/60 via-indigo-400/40 to-transparent" />

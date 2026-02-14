@@ -61,7 +61,7 @@ const normalizeResults = (results?: ApiResult[]) => {
   }
   const timestamp = Date.now();
   return results.map((result, index) =>
-    toChunkResult(result, `result-${timestamp}-${index}`)
+    toChunkResult(result, `result-${timestamp}-${index}`),
   );
 };
 
@@ -168,8 +168,8 @@ export default function ChatPage() {
                 answerProvider: answerPayload?.provider ?? null,
                 answerModel: answerPayload?.model ?? null,
               }
-            : message
-        )
+            : message,
+        ),
       );
     } catch (error) {
       const fallback =
@@ -183,8 +183,8 @@ export default function ChatPage() {
                 error: fallback,
                 content: "",
               }
-            : message
-        )
+            : message,
+        ),
       );
     } finally {
       setIsSending(false);
@@ -204,7 +204,7 @@ export default function ChatPage() {
 
   return (
     <section
-      className="relative flex flex-col overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur"
+      className="relative flex flex-col overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur dark:shadow-violet-900/20"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
       <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-emerald-400/40 via-cyan-300/30 to-transparent" />

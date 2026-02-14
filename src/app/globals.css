@@ -98,37 +98,37 @@ a {
 
 .light {
   --radius: 0.625rem;
-  --background: oklch(1 0 0);
-  --foreground: oklch(0.145 0 0);
-  --card: oklch(1 0 0);
-  --card-foreground: oklch(0.145 0 0);
-  --popover: oklch(1 0 0);
-  --popover-foreground: oklch(0.145 0 0);
-  --primary: oklch(0.205 0 0);
-  --primary-foreground: oklch(0.985 0 0);
-  --secondary: oklch(0.97 0 0);
-  --secondary-foreground: oklch(0.205 0 0);
-  --muted: oklch(0.97 0 0);
-  --muted-foreground: oklch(0.556 0 0);
-  --accent: oklch(0.97 0 0);
-  --accent-foreground: oklch(0.205 0 0);
+  --background: #faf5ff;
+  --foreground: #1e1b4b;
+  --card: #ffffff;
+  --card-foreground: #1e1b4b;
+  --popover: #ffffff;
+  --popover-foreground: #1e1b4b;
+  --primary: #7c3aed;
+  --primary-foreground: #f8f7ff;
+  --secondary: #ede9fe;
+  --secondary-foreground: #3730a3;
+  --muted: #f5f3ff;
+  --muted-foreground: #5b4e9a;
+  --accent: #ecfeff;
+  --accent-foreground: #155e75;
   --destructive: oklch(0.577 0.245 27.325);
-  --border: oklch(0.922 0 0);
-  --input: oklch(0.922 0 0);
-  --ring: oklch(0.708 0 0);
-  --chart-1: oklch(0.646 0.222 41.116);
-  --chart-2: oklch(0.6 0.118 184.704);
-  --chart-3: oklch(0.398 0.07 227.392);
-  --chart-4: oklch(0.828 0.189 84.429);
-  --chart-5: oklch(0.769 0.188 70.08);
-  --sidebar: oklch(0.985 0 0);
-  --sidebar-foreground: oklch(0.145 0 0);
-  --sidebar-primary: oklch(0.205 0 0);
-  --sidebar-primary-foreground: oklch(0.985 0 0);
-  --sidebar-accent: oklch(0.97 0 0);
-  --sidebar-accent-foreground: oklch(0.205 0 0);
-  --sidebar-border: oklch(0.922 0 0);
-  --sidebar-ring: oklch(0.708 0 0);
+  --border: #ddd6fe;
+  --input: #ddd6fe;
+  --ring: #06b6d4;
+  --chart-1: #7c3aed;
+  --chart-2: #06b6d4;
+  --chart-3: #3b82f6;
+  --chart-4: #a78bfa;
+  --chart-5: #14b8a6;
+  --sidebar: #fcfaff;
+  --sidebar-foreground: #1e1b4b;
+  --sidebar-primary: #7c3aed;
+  --sidebar-primary-foreground: #f8f7ff;
+  --sidebar-accent: #ede9fe;
+  --sidebar-accent-foreground: #3730a3;
+  --sidebar-border: #ddd6fe;
+  --sidebar-ring: #06b6d4;
 }
 
 @layer base {
@@ -142,7 +142,7 @@ a {
 
 .scrollbar-dark {
   scrollbar-width: thin;
-  scrollbar-color: #475569 #0f172a;
+  scrollbar-color: var(--muted-foreground) var(--background);
 }
 
 .scrollbar-dark::-webkit-scrollbar {
@@ -150,17 +150,17 @@ a {
 }
 
 .scrollbar-dark::-webkit-scrollbar-track {
-  background: rgba(15, 23, 42, 0.9);
+  background: color-mix(in srgb, var(--background) 92%, transparent);
   border-radius: 999px;
 }
 
 .scrollbar-dark::-webkit-scrollbar-thumb {
-  background: rgba(71, 85, 105, 0.9);
+  background: color-mix(in srgb, var(--muted-foreground) 78%, transparent);
   border-radius: 999px;
 }
 
 .scrollbar-dark::-webkit-scrollbar-thumb:hover {
-  background: rgba(99, 115, 129, 0.9);
+  background: color-mix(in srgb, var(--muted-foreground) 92%, transparent);
 }
 
 .motion-aurora {
@@ -183,9 +183,9 @@ a {
 
 .aurora-veil--light {
   background-image:
-    radial-gradient(circle at 20% 20%, rgba(120, 70, 255, 0.25), transparent 35%),
-    radial-gradient(circle at 80% 10%, rgba(14, 165, 233, 0.2), transparent 38%),
-    conic-gradient(from 90deg, rgba(94, 234, 212, 0.24), rgba(59, 130, 246, 0.2), rgba(236, 72, 153, 0.16), rgba(94, 234, 212, 0.24));
+    radial-gradient(circle at 20% 20%, rgba(124, 58, 237, 0.2), transparent 35%),
+    radial-gradient(circle at 80% 10%, rgba(6, 182, 212, 0.18), transparent 38%),
+    conic-gradient(from 90deg, rgba(59, 130, 246, 0.14), rgba(124, 58, 237, 0.16), rgba(6, 182, 212, 0.16), rgba(59, 130, 246, 0.14));
 }
 
 .aurora-veil--dark {

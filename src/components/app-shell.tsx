@@ -61,16 +61,24 @@ export function AppShell({ children }: PropsWithChildren) {
     () => [
       { href: "/", label: t.nav.qa, roles: ["user", "admin"] as UserRole[] },
       { href: "/chat", label: t.nav.chat, roles: ["user", "admin"] },
-      { href: "/library", label: t.nav.library, roles: ["admin"] as UserRole[] },
-      { href: "/settings", label: t.nav.settings, roles: ["admin"] as UserRole[] },
+      {
+        href: "/library",
+        label: t.nav.library,
+        roles: ["admin"] as UserRole[],
+      },
+      {
+        href: "/settings",
+        label: t.nav.settings,
+        roles: ["admin"] as UserRole[],
+      },
       { href: "/users", label: t.nav.users, roles: ["admin"] as UserRole[] },
     ],
-    [t]
+    [t],
   );
 
   const allowedNavItems = useMemo(
     () => navItems.filter((item) => item.roles.includes(userRole)),
-    [navItems, userRole]
+    [navItems, userRole],
   );
 
   useEffect(() => {
@@ -106,7 +114,7 @@ export function AppShell({ children }: PropsWithChildren) {
   }, [language, setLanguage]);
 
   const controlStyles = isLight
-    ? "border-slate-200 bg-white/80 text-slate-800 shadow-sm hover:border-violet-200 hover:bg-violet-50 hover:text-slate-900"
+    ? "border-violet-200 bg-white/82 text-indigo-900 shadow-sm hover:border-cyan-300 hover:bg-cyan-50 hover:text-indigo-950"
     : "border-white/10 bg-white/10 text-white/80 hover:border-violet-300/60 hover:text-white";
 
   return (
@@ -115,8 +123,8 @@ export function AppShell({ children }: PropsWithChildren) {
         className={clsx(
           "pointer-events-none absolute inset-0 -z-10 opacity-90 transition-colors",
           isLight
-            ? "bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.16),_rgba(255,255,255,0.9))]"
-            : "bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.32),_rgba(2,6,23,0.95))]"
+            ? "bg-[radial-gradient(circle_at_top,_rgba(124,58,237,0.15),_rgba(250,245,255,0.94))]"
+            : "bg-[radial-gradient(circle_at_top,_rgba(120,70,255,0.32),_rgba(2,6,23,0.95))]",
         )}
         aria-hidden
       />
@@ -124,7 +132,7 @@ export function AppShell({ children }: PropsWithChildren) {
         <div
           className={clsx(
             "aurora-veil",
-            isLight ? "aurora-veil--light" : "aurora-veil--dark"
+            isLight ? "aurora-veil--light" : "aurora-veil--dark",
           )}
         />
         <div
@@ -157,7 +165,7 @@ export function AppShell({ children }: PropsWithChildren) {
               onClick={toggleLanguage}
               className={clsx(
                 "inline-flex h-10 items-center justify-center gap-2 rounded-full px-4 text-xs font-semibold tracking-wide transition cursor-pointer",
-                controlStyles
+                controlStyles,
               )}
               aria-label={t.layout.language.label}
               aria-pressed={language === "zh"}
@@ -176,7 +184,7 @@ export function AppShell({ children }: PropsWithChildren) {
               onClick={toggleTheme}
               className={clsx(
                 "inline-flex size-10 items-center justify-center rounded-full transition cursor-pointer",
-                controlStyles
+                controlStyles,
               )}
               aria-label="Toggle theme"
             >
@@ -203,8 +211,8 @@ export function AppShell({ children }: PropsWithChildren) {
             className={clsx(
               "flex flex-col gap-6 rounded-3xl border p-6 shadow-2xl backdrop-blur",
               isLight
-                ? "border-slate-200/90 bg-white/85 text-foreground shadow-xl shadow-slate-900/10"
-                : "border-white/10 bg-slate-900/50 text-white shadow-purple-900/20"
+                ? "border-violet-200/90 bg-white/86 text-foreground shadow-xl shadow-violet-900/10"
+                : "border-white/10 bg-slate-900/50 text-white shadow-[0_30px_60px_-34px_rgba(139,92,246,0.58)]",
             )}
             style={{ height: "min(794px, calc(100vh - 220px))" }}
           >
@@ -222,14 +230,14 @@ export function AppShell({ children }: PropsWithChildren) {
                       "nav-backlight group flex items-center gap-3 rounded-2xl border px-4 py-3 text-base font-medium transition-colors",
                       isActive
                         ? clsx(
-                            "border bg-gradient-to-r shadow-lg border-violet-300/80",
+                            "border shadow-lg",
                             isLight
-                              ? "from-slate-500 via-slate-600 to-slate-700 text-white shadow-slate-800/35"
-                              : "from-violet-500 to-indigo-600 text-slate-950 shadow-violet-500/40"
+                              ? "border-violet-300/80 bg-violet-600 text-white shadow-violet-500/35"
+                              : "border-violet-300/70 bg-violet-500 text-white shadow-violet-500/40",
                           )
                         : isLight
-                        ? "border-slate-200 bg-white/70 text-foreground/80 shadow-sm hover:border-violet-200 hover:bg-slate-300/80"
-                        : "border-white/10 bg-white/5 text-white/80 hover:border-violet-300/60 hover:text-white"
+                          ? "border-violet-200/80 bg-white/72 text-indigo-900/80 shadow-sm hover:border-cyan-300/80 hover:bg-violet-200/75"
+                          : "border-white/10 bg-white/5 text-white/80 hover:border-violet-300/60 hover:text-white",
                     )}
                   >
                     <span className="transition-colors duration-200 group-hover:text-white">
