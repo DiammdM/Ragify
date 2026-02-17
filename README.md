@@ -14,6 +14,20 @@ Demo placeholder: drop your recording link or local asset here (for example, `[W
 - Auth and roles 🔐: register/login via cookie sessions; uploads, indexing, and user-role management are admin-only.
 - Localization and theme 🌓: English/Chinese copy and light/dark themes built with Tailwind and shadcn/ui.
 
+## System Flow 🗺️
+
+![Ragify system flow](./asserts/ragify-flow.png)
+
+End-to-end flow:
+
+1. Upload documents in Library.
+2. Parse and normalize text by file type.
+3. Chunk content and generate embeddings.
+4. Upsert vectors + metadata to Qdrant.
+5. Retrieve top-k chunks for a user query.
+6. Optionally rerank with cross-encoder.
+7. Generate the final grounded answer with the selected LLM.
+
 ## Prerequisites 🔧
 
 - Node.js 18+ and npm.
@@ -100,3 +114,11 @@ If reranker weights live elsewhere, set `CROSS_ENCODER_MODEL_PATH` to the repo-r
 - `npm run build`: create the production bundle.
 - `npm run start`: run the production server.
 - `npm run lint`: run ESLint.
+
+## Project structure
+
+- `src/app`: App Router pages and API routes.
+- `src/server`: RAG pipeline (indexing, retrieval, reranking, model providers).
+- `src/lib`: shared app helpers, auth utilities, and library file type definitions.
+- `prisma`: Prisma schema and database model definitions.
+- `data/uploads`: persisted uploaded source files.
