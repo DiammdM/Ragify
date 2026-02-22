@@ -9,6 +9,7 @@
     "build": "next build --turbopack",
     "start": "next start",
     "lint": "eslint",
+    "e2e:login-settings": "node playwright-login-settings.mjs",
     "kill": "npx kill-port 3000",
     "qdrant": "node ./src/test-qdrant.js"
   },
@@ -43,6 +44,7 @@
     "eslint": "^9",
     "eslint-config-next": "15.5.4",
     "kill-port": "^2.0.1",
+    "playwright": "^1.58.2",
     "prisma": "^6.16.2",
     "tailwindcss": "^4",
     "tsx": "^4.20.6",
