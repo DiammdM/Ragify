@@ -21,6 +21,7 @@ model User {
   createdAt DateTime @default(now()) @map("createTime")
   updatedAt DateTime @updatedAt @map("updateTime")
   role      String
+  chatConversations ChatConversation[]
 }
 
 model LibraryDocument {
@@ -52,4 +53,30 @@ model ModelSettings {
   quickPrompt3 String?
   createdAt   DateTime @default(now()) @map("createTime")
   updatedAt   DateTime @updatedAt @map("updateTime")
+}
+
+model ChatConversation {
+  id            String        @id @default(auto()) @map("_id") @db.ObjectId
+  userId        String        @db.ObjectId
+  user          User          @relation(fields: [userId], references: [id])
+  title         String        @default("New chat")
+  createdAt     DateTime      @default(now())
+  updatedAt     DateTime      @updatedAt
+  lastMessageAt DateTime      @default(now())
+  messages      ChatMessage[]
+
+  @@index([userId])
+  @@index([updatedAt])
+}
+
+model ChatMessage {
+  id             String           @id @default(auto()) @map("_id") @db.ObjectId
+  conversationId String           @db.ObjectId
+  conversation   ChatConversation @relation(fields: [conversationId], references: [id])
+  role           String
+  content        String
+  createdAt      DateTime         @default(now())
+
+  @@index([conversationId])
+  @@index([createdAt])
 }
