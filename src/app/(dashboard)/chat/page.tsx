@@ -3,12 +3,14 @@
 import { FormEvent, useEffect, useRef, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
+import { dedupeBySourceName } from "@/lib/source-label";
 
 type ChunkResult = {
   id: string;
   content: string;
   documentName: string | null;
   documentId: string | null;
+  source: string | null;
   chunkIndex: number | null;
   score: number;
 };
@@ -45,6 +47,7 @@ const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
   documentName:
     typeof result.documentName === "string" ? result.documentName : null,
   documentId: typeof result.documentId === "string" ? result.documentId : null,
+  source: typeof result.source === "string" ? result.source : null,
   chunkIndex:
     typeof result.chunkIndex === "number" && Number.isFinite(result.chunkIndex)
       ? result.chunkIndex
@@ -60,9 +63,11 @@ const normalizeResults = (results?: ApiResult[]) => {
     return [];
   }
   const timestamp = Date.now();
-  return results.map((result, index) =>
+  const normalized = results.map((result, index) =>
     toChunkResult(result, `result-${timestamp}-${index}`),
   );
+
+  return dedupeBySourceName(normalized);
 };
 
 const normalizeAnswer = (answer?: AnswerPayload) => {

@@ -49,15 +49,17 @@ export default function UsersPage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
-    [locale]
+    [locale],
   );
+  const rowActionButtonClass =
+    "text-xs font-semibold transition-colors duration-200";
 
   const roleOptions = useMemo(
     () => [
       { value: "user", label: t.users.roles.user },
       { value: "admin", label: t.users.roles.admin },
     ],
-    [t.users.roles.admin, t.users.roles.user]
+    [t.users.roles.admin, t.users.roles.user],
   );
 
   useEffect(() => {
@@ -96,7 +98,7 @@ export default function UsersPage() {
             data.users.map((user) => ({
               ...user,
               role: user.role === "admin" ? "admin" : "user",
-            }))
+            })),
           );
         }
       } catch (error) {
@@ -135,8 +137,10 @@ export default function UsersPage() {
 
       setUsers((prev) =>
         prev.map((user) =>
-          user.id === userId ? { ...user, role: data.user?.role ?? role } : user
-        )
+          user.id === userId
+            ? { ...user, role: data.user?.role ?? role }
+            : user,
+        ),
       );
       setFeedback(t.users.success);
       setTimeout(() => setFeedback(null), 2600);
@@ -228,8 +232,8 @@ export default function UsersPage() {
                       <Button
                         type="button"
                         variant="destructive"
-                        className="cursor-pointer hover:!bg-destructive/50  dark:hover:!bg-destructive/100"
-                        size="sm"
+                        className={`${rowActionButtonClass} cursor-pointer hover:!bg-destructive/80 dark:hover:!bg-destructive/90 disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:!bg-destructive dark:disabled:hover:!bg-destructive/60`}
+                        size="pill"
                         disabled={isSelf || savingId === user.id}
                         onClick={() => setPendingDelete(user)}
                       >
@@ -271,6 +275,7 @@ export default function UsersPage() {
               取消
             </AlertDialogCancel>
             <AlertDialogAction
+              className="disabled:pointer-events-auto disabled:cursor-not-allowed disabled:hover:!bg-primary"
               onClick={async () => {
                 if (!pendingDelete) return;
                 setSavingId(pendingDelete.id);
@@ -278,16 +283,16 @@ export default function UsersPage() {
                 try {
                   const response = await fetch(
                     `/api/admin/users/${pendingDelete.id}`,
-                    { method: "DELETE" }
+                    { method: "DELETE" },
                   );
                   if (!response.ok) {
                     const data = await response.json().catch(() => null);
                     throw new Error(
-                      (data && data.error) || t.users.deleteError
+                      (data && data.error) || t.users.deleteError,
                     );
                   }
                   setUsers((prev) =>
-                    prev.filter((item) => item.id !== pendingDelete.id)
+                    prev.filter((item) => item.id !== pendingDelete.id),
                   );
                   setPendingDelete(null);
                 } catch (error) {
@@ -295,7 +300,7 @@ export default function UsersPage() {
                   setFeedback(
                     error instanceof Error && error.message
                       ? error.message
-                      : t.users.deleteError
+                      : t.users.deleteError,
                   );
                 } finally {
                   setSavingId(null);

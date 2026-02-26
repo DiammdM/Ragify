@@ -6,6 +6,7 @@ import {
   generateDirectAnswer,
 } from "@/server/answers/generator";
 import { getModelSettingsCached } from "@/server/models/user-settings";
+import { dedupeBySourceName, getSourceLabel } from "@/lib/source-label";
 
 export const runtime = "nodejs";
 
@@ -57,6 +58,17 @@ export async function POST(request: Request) {
       limit: 3,
     });
     const relevantResults = filterRelevantChunks(results);
+    const uniqueResults = dedupeBySourceName(relevantResults);
+
+    console.info(
+      "[qa] relevant chunks",
+      relevantResults.map((chunk) => ({
+        source: getSourceLabel(chunk),
+        chunkIndex: chunk.chunkIndex,
+        score: chunk.score,
+        crossScore: chunk.crossScore ?? null,
+      })),
+    );
 
     let answer:
       | Awaited<ReturnType<typeof generateAnswerFromChunks>>
@@ -81,7 +93,7 @@ export async function POST(request: Request) {
     }
 
     return NextResponse.json({
-      results: relevantResults,
+      results: uniqueResults,
       answer,
       answerError: answerError ?? null,
     });

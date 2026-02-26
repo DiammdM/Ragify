@@ -135,6 +135,7 @@ export const deleteExistingVectors = async (documentId: string) => {
 const upsertChunks = async (
   documentId: string,
   documentName: string,
+  source: string,
   chunks: ReturnType<typeof chunkText>,
   vectors: EmbeddingVector[],
   offset = 0
@@ -174,6 +175,7 @@ const upsertChunks = async (
             payload: {
               documentId,
               documentName,
+              source,
               chunkIndex: offset + vectorIndex,
               content: chunk.content,
               start: chunk.start,
@@ -324,7 +326,7 @@ export async function indexDocument(documentId: string) {
   try {
     await ensureCollection(vectorSize);
     await deleteExistingVectors(document.id);
-    await upsertChunks(document.id, document.name, chunks, allVectors);
+    await upsertChunks(document.id, document.name, document.path, chunks, allVectors);
   } catch (error) {
     throw normalizeQdrantError(error);
   }

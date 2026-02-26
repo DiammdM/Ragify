@@ -3,6 +3,7 @@
 import { FormEvent, useEffect, useMemo, useRef, useState } from "react";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
+import { dedupeBySourceName, getSourceLabel } from "@/lib/source-label";
 import {
   Tooltip,
   TooltipContent,
@@ -14,6 +15,7 @@ type ChunkResult = {
   content: string;
   documentName: string | null;
   documentId: string | null;
+  source: string | null;
   chunkIndex: number | null;
   score: number;
   vectorScore?: number | null;
@@ -61,6 +63,7 @@ const toChunkResult = (result: ApiResult, fallbackId: string): ChunkResult => ({
   documentName:
     typeof result.documentName === "string" ? result.documentName : null,
   documentId: typeof result.documentId === "string" ? result.documentId : null,
+  source: typeof result.source === "string" ? result.source : null,
   chunkIndex:
     typeof result.chunkIndex === "number" && Number.isFinite(result.chunkIndex)
       ? result.chunkIndex
@@ -85,9 +88,11 @@ const normalizeResults = (results?: ApiResult[]) => {
     return [];
   }
   const timestamp = Date.now();
-  return results.map((result, index) =>
+  const normalized = results.map((result, index) =>
     toChunkResult(result, `result-${timestamp}-${index}`),
   );
+
+  return dedupeBySourceName(normalized);
 };
 
 const normalizeAnswer = (answer?: ApiAnswer) => {
@@ -282,6 +287,12 @@ export default function Home() {
               <textarea
                 value={question}
                 onChange={(event) => setQuestion(event.target.value)}
+                onKeyDown={(event) => {
+                  if (event.key === "Enter" && !event.shiftKey) {
+                    event.preventDefault();
+                    event.currentTarget.form?.requestSubmit();
+                  }
+                }}
                 placeholder={t.qa.placeholder}
                 rows={1}
                 className="w-full min-h-[52px] rounded-[20px] border border-border bg-card px-4 py-3 text-base text-foreground shadow-inner shadow-slate-950/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/70 dark:text-white dark:shadow-violet-600/10 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
@@ -409,6 +420,33 @@ export default function Home() {
                         <p className="text-sm leading-relaxed text-muted-foreground">
                           {t.qa.answerEmpty}
                         </p>
+                      )}
+                      {item.status === "ready" && (
+                        <div className="mt-3 border-t border-border/70 pt-2 dark:border-white/10">
+                          <p className="text-[10px] font-semibold uppercase tracking-[0.25em] text-muted-foreground">
+                            {t.chat.referencesTitle}
+                          </p>
+                          {item.results.length > 0 ? (
+                            <ul className="mt-2 space-y-2">
+                              {item.results.map((result) => {
+                                return (
+                                  <li
+                                    key={result.id}
+                                    className="rounded-lg border border-border/70 bg-background/70 px-2.5 py-2 text-xs dark:border-white/10 dark:bg-slate-900/50"
+                                  >
+                                    <p className="font-medium text-foreground">
+                                      {getSourceLabel(result)}
+                                    </p>
+                                  </li>
+                                );
+                              })}
+                            </ul>
+                          ) : (
+                            <p className="mt-2 text-xs text-muted-foreground">
+                              {t.chat.referencesEmpty}
+                            </p>
+                          )}
+                        </div>
                       )}
                     </div>
                   </article>

@@ -2,6 +2,7 @@ import { embedTexts } from "../embeddings/client";
 import { getQdrantClient } from "../qdrant/client";
 import { LIBRARY_COLLECTION_NAME } from "../qdrant/constants";
 import { normalizeQdrantError } from "../qdrant/errors";
+import { prisma } from "@/lib/prisma";
 
 const DEFAULT_RESULT_LIMIT = 10;
 
@@ -13,6 +14,7 @@ export type RetrievedChunk = {
   content: string;
   documentId: string | null;
   documentName: string | null;
+  source: string | null;
   chunkIndex: number | null;
   start: number | null;
   end: number | null;
@@ -69,7 +71,7 @@ export async function searchLibraryChunks(
       with_vector: false,
     });
 
-    return (points ?? []).map((point) => {
+    const chunks = (points ?? []).map((point) => {
       const payload = (point.payload ?? {}) as Record<string, unknown>;
 
       const vectorScore =
@@ -84,9 +86,56 @@ export async function searchLibraryChunks(
         content: toStringOrNull(payload.content) ?? "",
         documentId: toStringOrNull(payload.documentId),
         documentName: toStringOrNull(payload.documentName),
+        source: toStringOrNull(payload.source),
         chunkIndex: toNumberOrNull(payload.chunkIndex),
         start: toNumberOrNull(payload.start),
         end: toNumberOrNull(payload.end),
+      };
+    });
+
+    const unresolvedDocumentIds = Array.from(
+      new Set(
+        chunks
+          .filter((chunk) => !chunk.documentName && chunk.documentId)
+          .map((chunk) => chunk.documentId as string)
+      )
+    );
+
+    if (unresolvedDocumentIds.length === 0) {
+      return chunks;
+    }
+
+    const documents = await prisma.libraryDocument.findMany({
+      where: {
+        id: {
+          in: unresolvedDocumentIds,
+        },
+      },
+      select: {
+        id: true,
+        name: true,
+        path: true,
+      },
+    });
+
+    const documentMap = new Map(
+      documents.map((document) => [document.id, document])
+    );
+
+    return chunks.map((chunk) => {
+      if (!chunk.documentId) {
+        return chunk;
+      }
+
+      const document = documentMap.get(chunk.documentId);
+      if (!document) {
+        return chunk;
+      }
+
+      return {
+        ...chunk,
+        documentName: chunk.documentName ?? document.name,
+        source: chunk.source ?? document.path,
       };
     });
   } catch (error) {

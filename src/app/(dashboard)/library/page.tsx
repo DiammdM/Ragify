@@ -61,7 +61,7 @@ const formatBytes = (bytes: number) => {
   const units = ["B", "KB", "MB", "GB"];
   const exponent = Math.min(
     Math.floor(Math.log(bytes) / Math.log(1024)),
-    units.length - 1
+    units.length - 1,
   );
   const value = bytes / Math.pow(1024, exponent);
   return `${value.toFixed(value < 10 ? 1 : 0)} ${units[exponent]}`;
@@ -79,7 +79,7 @@ const toStatus = (status: string): Status =>
   KNOWN_STATUSES.includes(status as Status) ? (status as Status) : "uploaded";
 
 const toIndexingStage = (
-  stage: string | null | undefined
+  stage: string | null | undefined,
 ): IndexingStage | null =>
   stage && KNOWN_STAGES.includes(stage as IndexingStage)
     ? (stage as IndexingStage)
@@ -142,7 +142,7 @@ export default function LibraryPage() {
         hour: "2-digit",
         minute: "2-digit",
       }),
-    [locale]
+    [locale],
   );
 
   const statusStyles: Record<Status, string> = useMemo(
@@ -157,13 +157,15 @@ export default function LibraryPage() {
         ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
         : "border border-emerald-300/40 bg-emerald-500/15 text-emerald-100",
     }),
-    [isLight]
+    [isLight],
   );
 
   const hasIndexingDocuments = useMemo(
     () => documents.some((doc) => doc.status === "indexing"),
-    [documents]
+    [documents],
   );
+  const rowActionButtonClass =
+    "text-xs font-semibold transition-colors duration-200";
 
   useEffect(() => {
     let cancelled = false;
@@ -268,7 +270,7 @@ export default function LibraryPage() {
     }
 
     const invalidFiles = Array.from(files).filter(
-      (file) => !isSupportedFile(file.name)
+      (file) => !isSupportedFile(file.name),
     );
 
     if (invalidFiles.length > 0) {
@@ -363,8 +365,8 @@ export default function LibraryPage() {
               indexingStage: "extracting",
               indexingProgress: 0,
             }
-          : doc
-      )
+          : doc,
+      ),
     );
     setMessage({ type: "success", text: t.toasts.indexing });
 
@@ -390,7 +392,7 @@ export default function LibraryPage() {
       const indexedRecord = toDocumentRecord(payload.file);
 
       setDocuments((prev) =>
-        prev.map((doc) => (doc.id === id ? indexedRecord : doc))
+        prev.map((doc) => (doc.id === id ? indexedRecord : doc)),
       );
     } catch (error) {
       console.error("Failed to index document", error);
@@ -408,8 +410,8 @@ export default function LibraryPage() {
                 indexingStage: previousStage,
                 indexingProgress: previousProgress,
               }
-            : doc
-        )
+            : doc,
+        ),
       );
     }
   };
@@ -466,8 +468,8 @@ export default function LibraryPage() {
                   ? "border border-red-200 bg-red-50 text-red-800"
                   : "border border-red-400/40 bg-red-500/10 text-red-100"
                 : isLight
-                ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
-                : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
+                  ? "border border-emerald-200 bg-emerald-50 text-emerald-800"
+                  : "border border-emerald-400/40 bg-emerald-500/10 text-emerald-100"
             }`}
           >
             {message.text}
@@ -550,12 +552,12 @@ export default function LibraryPage() {
                           doc.status === "indexed" || doc.status === "indexing"
                         }
                         variant="cta"
-                        size="pill-sm"
+                        size="pill"
                         className={clsx(
-                          "px-3 py-1 text-[11px] font-semibold",
+                          rowActionButtonClass,
                           doc.status === "indexed"
                             ? "disabled:pointer-events-auto disabled:cursor-not-allowed"
-                            : "cursor-pointer"
+                            : "cursor-pointer",
                         )}
                       >
                         {actionLabel}
@@ -565,9 +567,12 @@ export default function LibraryPage() {
                         onClick={() =>
                           setPendingDelete({ id: doc.id, name: doc.name })
                         }
-                        size="sm"
+                        size="pill"
                         variant="destructive"
-                        className="px-3 py-1 text-[11px] font-semibold hover:!bg-destructive/50  dark:hover:!bg-destructive/100 cursor-pointer"
+                        className={clsx(
+                          rowActionButtonClass,
+                          "cursor-pointer hover:!bg-destructive/80 dark:hover:!bg-destructive/90",
+                        )}
                       >
                         {t.library.deleteAction}
                       </Button>

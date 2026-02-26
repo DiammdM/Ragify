@@ -1,6 +1,7 @@
 import type { RetrievedChunk } from "../library/search";
 import { generateWithModel } from "../models/client";
 import type { GenerationMessage, ModelSettings } from "../models/types";
+import { getSourceName } from "@/lib/source-label";
 
 export type AnswerPayload = {
   text: string;
@@ -13,20 +14,16 @@ export type ConversationTurn = {
   content: string;
 };
 
-const buildSourceBlock = (chunk: RetrievedChunk, index: number) => {
-  const title = chunk.documentName ?? `Source ${index + 1}`;
+const buildSourceBlock = (chunk: RetrievedChunk) => {
+  const title = getSourceName(chunk);
   const content = chunk.content?.trim() || "No content available.";
 
-  return [
-    `Source ${index + 1}: ${title}`,
-    `Chunk ID: ${chunk.id}`,
-    content,
-  ].join("\n");
+  return [`Filename: ${title ?? "Unknown source"}`, `Chunk ID: ${chunk.id}`, content].join("\n");
 };
 
 const buildMessages = (question: string, chunks: RetrievedChunk[]): GenerationMessage[] => {
   const sources = chunks
-    .map((chunk, index) => buildSourceBlock(chunk, index))
+    .map((chunk) => buildSourceBlock(chunk))
     .join("\n\n");
 
   const system =
@@ -77,12 +74,27 @@ export const generateAnswerFromChunks = async (
 
 export const generateDirectAnswer = async (
   question: string,
-  options?: { settings?: ModelSettings | null }
+  options?: { settings?: ModelSettings | null; history?: ConversationTurn[] }
 ): Promise<AnswerPayload> => {
   const trimmed = question.trim();
   if (!trimmed) {
     throw new Error("Question text is required to generate an answer.");
   }
+
+  // Keep up to the last eight turns so follow-ups still remember recent context.
+  const historyMessages: GenerationMessage[] = (options?.history ?? [])
+    .map((message) => ({
+      role: message.role,
+      content: message.content.trim(),
+    }))
+    .filter((message) => message.content.length > 0)
+    .slice(-8);
+
+  const latestHistory = historyMessages[historyMessages.length - 1];
+  const shouldAppendQuestion =
+    !latestHistory ||
+    latestHistory.role !== "user" ||
+    latestHistory.content !== trimmed;
 
   const messages: GenerationMessage[] = [
     {
@@ -90,8 +102,12 @@ export const generateDirectAnswer = async (
       content:
         "You are a helpful assistant. Answer concisely and accurately. If you are unsure, say so briefly.",
     },
-    { role: "user", content: trimmed },
+    ...historyMessages,
   ];
+
+  if (shouldAppendQuestion) {
+    messages.push({ role: "user", content: trimmed });
+  }
 
   const result = await generateWithModel({
     messages,
@@ -112,7 +128,7 @@ const buildChatMessages = (
   chunks: RetrievedChunk[]
 ): GenerationMessage[] => {
   const sources = chunks
-    .map((chunk, index) => buildSourceBlock(chunk, index))
+    .map((chunk) => buildSourceBlock(chunk))
     .join("\n\n");
 
   const system =
