@@ -18,11 +18,21 @@ const translations = {
       brand: "Ragify",
       tagline: "Retrieval-Augmented Knowledge Hub",
       menuLabel: "Feature directory",
+      navGroups: {
+        core: "Core",
+        admin: "Administration",
+      },
+      mobileMenu: {
+        label: "Navigation menu",
+        open: "Open menu",
+        close: "Close menu",
+      },
       language: {
         label: "Language",
         en: "English",
         zh: "简体中文",
       },
+      themeToggle: "Toggle theme",
       logout: "Log out",
       loggingOut: "Logging out...",
     },
@@ -232,11 +242,21 @@ const translations = {
       brand: "Ragify",
       tagline: "基于检索增强的知识中枢",
       menuLabel: "功能目录",
+      navGroups: {
+        core: "核心功能",
+        admin: "管理功能",
+      },
+      mobileMenu: {
+        label: "导航菜单",
+        open: "打开菜单",
+        close: "关闭菜单",
+      },
       language: {
         label: "界面语言",
         en: "English",
         zh: "简体中文",
       },
+      themeToggle: "切换主题",
       logout: "退出登录",
       loggingOut: "正在退出...",
     },
