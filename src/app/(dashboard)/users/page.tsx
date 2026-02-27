@@ -154,10 +154,9 @@ export default function UsersPage() {
 
   return (
     <section
-      className="relative flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
+      className="flat-surface-1 relative flex flex-col space-y-6 overflow-hidden p-6 text-foreground dark:text-white sm:p-8"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-indigo-400/50 via-violet-400/40 to-transparent" />
       <header className="space-y-2">
         <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
           {t.users.title}
@@ -165,7 +164,7 @@ export default function UsersPage() {
         <p className="text-base text-muted-foreground">{t.users.subtitle}</p>
       </header>
 
-      <div className="flex-1 space-y-4 overflow-hidden rounded-[28px] border border-border bg-muted/40 p-6 dark:border-white/10 dark:bg-slate-950/60">
+      <div className="flex-1 space-y-4 overflow-hidden rounded-[16px] border border-border bg-muted/40 p-6 dark:border-white/10 dark:bg-slate-950/60">
         {loadError ? (
           <p className="text-sm text-rose-400">{loadError}</p>
         ) : isLoading ? (
@@ -204,10 +203,10 @@ export default function UsersPage() {
                         }
                         disabled={isSelf || savingId === user.id}
                       >
-                        <SelectTrigger className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground shadow-inner shadow-slate-900/5 data-[placeholder]:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-white dark:shadow-violet-500/20">
+                        <SelectTrigger className="h-10 w-full rounded-lg border border-border bg-card px-3 text-sm font-medium text-foreground data-[placeholder]:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-white">
                           <SelectValue />
                         </SelectTrigger>
-                        <SelectContent className="border border-border bg-card text-foreground shadow-lg dark:border-white/10 dark:bg-slate-950/95 dark:text-white">
+                        <SelectContent className="border border-border bg-card text-foreground dark:border-white/10 dark:bg-slate-950/95 dark:text-white">
                           {roleOptions.map((option) => (
                             <SelectItem
                               key={option.value}

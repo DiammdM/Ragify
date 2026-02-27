@@ -1,6 +1,13 @@
 "use client";
 
-import { FormEvent, useCallback, useEffect, useMemo, useRef, useState } from "react";
+import {
+  FormEvent,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import { Menu, MessageSquarePlus, Plus, Trash2, X } from "lucide-react";
 import { useLanguage } from "@/components/language-provider";
 import { Button } from "@/components/ui/button";
@@ -49,14 +56,20 @@ const upsertConversation = (
 export default function ChatPage() {
   const { t, language } = useLanguage();
   const [input, setInput] = useState("");
-  const [conversations, setConversations] = useState<ChatConversationListItemDTO[]>([]);
-  const [activeConversationId, setActiveConversationId] = useState<string | null>(null);
+  const [conversations, setConversations] = useState<
+    ChatConversationListItemDTO[]
+  >([]);
+  const [activeConversationId, setActiveConversationId] = useState<
+    string | null
+  >(null);
   const [messages, setMessages] = useState<ChatMessage[]>([]);
   const [isSending, setIsSending] = useState(false);
   const [isLoadingConversations, setIsLoadingConversations] = useState(true);
   const [isLoadingMessages, setIsLoadingMessages] = useState(false);
   const [isCreatingConversation, setIsCreatingConversation] = useState(false);
-  const [deletingConversationId, setDeletingConversationId] = useState<string | null>(null);
+  const [deletingConversationId, setDeletingConversationId] = useState<
+    string | null
+  >(null);
   const [pendingDeleteConversation, setPendingDeleteConversation] =
     useState<ChatConversationListItemDTO | null>(null);
   const [historyError, setHistoryError] = useState<string | null>(null);
@@ -96,24 +109,29 @@ export default function ChatPage() {
 
       try {
         const response = await fetch("/api/chat/conversations");
-        const data: ChatConversationListResponse & ApiError = await response.json();
+        const data: ChatConversationListResponse & ApiError =
+          await response.json();
 
         if (!response.ok) {
           throw new Error(data.error || t.chat.loadHistoryError);
         }
 
-        const list = Array.isArray(data.conversations) ? data.conversations : [];
+        const list = Array.isArray(data.conversations)
+          ? data.conversations
+          : [];
         setConversations(list);
 
         const currentActiveId = activeConversationIdRef.current;
         const nextActiveId =
           preferredConversationId &&
-          list.some((conversation) => conversation.id === preferredConversationId)
+          list.some(
+            (conversation) => conversation.id === preferredConversationId,
+          )
             ? preferredConversationId
             : currentActiveId &&
                 list.some((conversation) => conversation.id === currentActiveId)
               ? currentActiveId
-              : list[0]?.id ?? null;
+              : (list[0]?.id ?? null);
 
         setActiveConversationId(nextActiveId);
         if (!nextActiveId) {
@@ -133,25 +151,28 @@ export default function ChatPage() {
     [t.chat.loadHistoryError],
   );
 
-  const createConversation = useCallback(async (options?: { skipNextLoad?: boolean }) => {
-    const response = await fetch("/api/chat/conversations", {
-      method: "POST",
-    });
-    const data: CreateConversationResponse & ApiError = await response.json();
+  const createConversation = useCallback(
+    async (options?: { skipNextLoad?: boolean }) => {
+      const response = await fetch("/api/chat/conversations", {
+        method: "POST",
+      });
+      const data: CreateConversationResponse & ApiError = await response.json();
 
-    if (!response.ok || !data.conversation) {
-      throw new Error(data.error || t.chat.loadHistoryError);
-    }
+      if (!response.ok || !data.conversation) {
+        throw new Error(data.error || t.chat.loadHistoryError);
+      }
 
-    setConversations((prev) => upsertConversation(prev, data.conversation));
-    if (options?.skipNextLoad) {
-      skipNextLoadConversationIdRef.current = data.conversation.id;
-    }
-    setActiveConversationId(data.conversation.id);
-    setMessages([]);
+      setConversations((prev) => upsertConversation(prev, data.conversation));
+      if (options?.skipNextLoad) {
+        skipNextLoadConversationIdRef.current = data.conversation.id;
+      }
+      setActiveConversationId(data.conversation.id);
+      setMessages([]);
 
-    return data.conversation.id;
-  }, [t.chat.loadHistoryError]);
+      return data.conversation.id;
+    },
+    [t.chat.loadHistoryError],
+  );
 
   const loadMessages = useCallback(
     async (conversationId: string) => {
@@ -378,11 +399,10 @@ export default function ChatPage() {
   return (
     <>
       <section
-        className="relative flex overflow-hidden rounded-[32px] shadow-xl shadow-slate-900/10 backdrop-blur dark:shadow-violet-900/20"
+        className="flat-surface-1 relative flex overflow-hidden"
         style={{ height: "min(794px, calc(100vh - 220px))" }}
       >
-        <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-emerald-400/40 via-cyan-300/30 to-transparent" />
-        <div className="grid h-full w-full grid-cols-1 rounded-[32px] border border-border bg-card/90 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20 md:grid-cols-[300px_1fr]">
+        <div className="grid h-full w-full grid-cols-1 bg-card/95 text-foreground dark:bg-slate-900/60 dark:text-white md:grid-cols-[300px_1fr]">
           <aside
             className={`absolute inset-y-0 left-0 z-30 w-[300px] border-r border-border bg-card/95 p-4 transition-transform duration-200 dark:border-white/10 dark:bg-slate-950/95 md:relative md:z-auto md:w-auto md:translate-x-0 ${
               isHistoryOpen ? "translate-x-0" : "-translate-x-full"
@@ -409,7 +429,7 @@ export default function ChatPage() {
                 type="button"
                 onClick={handleCreateConversation}
                 disabled={isCreatingConversation || isSending}
-                className="w-full justify-start rounded-xl"
+                className="w-full justify-start rounded-xl hover:cursor-pointer"
                 variant="outline"
               >
                 {isCreatingConversation ? (
@@ -436,7 +456,7 @@ export default function ChatPage() {
                       return (
                         <div
                           key={conversation.id}
-                          className={`group w-full rounded-xl border p-3 text-left transition ${
+                          className={`group w-full rounded-xl border p-3 text-left transition hover:cursor-pointer ${
                             isActive
                               ? "border-violet-300/80 bg-violet-500/10"
                               : "border-border bg-background/70 hover:border-violet-300/60 hover:bg-violet-500/5 dark:border-white/10 dark:bg-slate-900/60"
@@ -449,13 +469,14 @@ export default function ChatPage() {
                                 setActiveConversationId(conversation.id);
                                 setIsHistoryOpen(false);
                               }}
-                              className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50"
+                              className="min-w-0 flex-1 text-left outline-none focus-visible:ring-2 focus-visible:ring-ring/50 hover:cursor-pointer"
                             >
                               <p className="truncate text-sm font-medium text-foreground dark:text-white/90">
                                 {conversation.title}
                               </p>
                               <p className="mt-1 truncate text-xs text-muted-foreground">
-                                {conversation.lastMessagePreview || t.chat.answerFallback}
+                                {conversation.lastMessagePreview ||
+                                  t.chat.answerFallback}
                               </p>
                               <p className="mt-1 text-[11px] text-muted-foreground/90">
                                 {timeFormatter.format(
@@ -471,8 +492,10 @@ export default function ChatPage() {
                                 setPendingDeleteConversation(conversation);
                               }}
                               aria-label={t.chat.deleteConversation}
-                              className="opacity-80 transition hover:text-red-500 group-hover:opacity-100"
-                              disabled={deletingConversationId === conversation.id}
+                              className="opacity-80 transition hover:text-red-500 group-hover:opacity-100 hover:cursor-pointer"
+                              disabled={
+                                deletingConversationId === conversation.id
+                              }
                             >
                               <Trash2 className="size-4" />
                             </Button>
@@ -514,7 +537,7 @@ export default function ChatPage() {
             <div className="mt-6 grid min-h-0 flex-1 grid-rows-[1fr_auto] gap-4">
               <div
                 ref={viewportRef}
-                className="scrollbar-dark flex min-h-0 flex-col gap-4 overflow-y-auto rounded-[28px] border border-border bg-muted/50 p-5 dark:border-white/10 dark:bg-slate-950/60"
+                className="scrollbar-dark flex min-h-0 flex-col gap-4 overflow-y-auto rounded-[16px] border border-border bg-muted/50 p-5 dark:border-white/10 dark:bg-slate-950/60"
               >
                 {!activeConversationId ? (
                   <div className="rounded-2xl border border-dashed border-border bg-muted/40 p-6 text-sm text-muted-foreground dark:border-white/10 dark:bg-slate-900/50">
@@ -542,10 +565,10 @@ export default function ChatPage() {
                         }`}
                       >
                         <div
-                          className={`max-w-[82%] rounded-xl border px-3 py-2 shadow ${
+                          className={`max-w-[82%] rounded-xl border px-3 py-2 ${
                             isUser
-                              ? "border-violet-200 bg-gradient-to-r from-violet-500 to-indigo-500 text-white shadow-violet-500/30"
-                              : "border-border bg-card text-foreground shadow-sm dark:border-white/10 dark:bg-slate-900/70 dark:text-white/90 dark:shadow-slate-950/30"
+                              ? "border-violet-500/80 bg-violet-600 text-white"
+                              : "border-border bg-card text-foreground dark:border-white/10 dark:bg-slate-900/70 dark:text-white/90"
                           }`}
                         >
                           <div className="text-sm whitespace-pre-line">
@@ -555,12 +578,16 @@ export default function ChatPage() {
                                   <span
                                     key={index}
                                     className="inline-block size-2 animate-bounce rounded-full bg-foreground/70"
-                                    style={{ animationDelay: `${index * 120}ms` }}
+                                    style={{
+                                      animationDelay: `${index * 120}ms`,
+                                    }}
                                   />
                                 ))}
                               </div>
                             ) : isError ? (
-                              message.error || message.content || t.chat.answerError
+                              message.error ||
+                              message.content ||
+                              t.chat.answerError
                             ) : (
                               message.content || t.chat.answerFallback
                             )}
@@ -572,32 +599,26 @@ export default function ChatPage() {
                 )}
               </div>
 
-              <form className="space-y-3" onSubmit={handleSubmit}>
-                <div className="flex flex-col gap-2 rounded-[28px] border border-border bg-card p-4 shadow-inner shadow-slate-900/5 dark:border-white/10 dark:bg-slate-950/70 dark:shadow-violet-600/10">
-                  <textarea
+              <form onSubmit={handleSubmit}>
+                <div className="flex items-center gap-2 rounded-[10px] border border-border bg-card px-3 py-2 transition-colors focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/30 dark:border-white/10 dark:bg-slate-950/70 dark:focus-within:border-violet-300/70 dark:focus-within:ring-violet-500/30">
+                  <input
+                    type="text"
                     value={input}
                     onChange={(event) => setInput(event.target.value)}
-                    onKeyDown={(event) => {
-                      if (event.key === "Enter" && !event.shiftKey) {
-                        event.preventDefault();
-                        void submitMessage();
-                      }
-                    }}
                     placeholder={t.chat.placeholder}
-                    rows={2}
-                    className="w-full resize-none rounded-2xl border border-border bg-card p-3 text-sm text-foreground shadow-inner shadow-slate-900/5 outline-none transition placeholder:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-950/90 dark:text-white dark:shadow-violet-500/15 dark:focus:border-violet-300/70 dark:focus:ring-violet-500/30"
+                    aria-label={t.chat.inputLabel}
+                    className="h-10 min-w-0 flex-1 bg-transparent px-2 text-sm text-foreground outline-none placeholder:text-muted-foreground disabled:cursor-not-allowed disabled:opacity-60 dark:text-white"
                     disabled={isSending}
                   />
-                  <div className="flex items-center justify-end">
-                    <Button
-                      type="submit"
-                      variant="cta"
-                      size="pill-sm"
-                      disabled={isSending || input.trim().length === 0}
-                    >
-                      {isSending ? t.chat.sending : t.chat.send}
-                    </Button>
-                  </div>
+                  <Button
+                    type="submit"
+                    variant="cta"
+                    size="pill-sm"
+                    className="shrink-0"
+                    disabled={isSending || input.trim().length === 0}
+                  >
+                    {isSending ? t.chat.sending : t.chat.send}
+                  </Button>
                 </div>
               </form>
             </div>

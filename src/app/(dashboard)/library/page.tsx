@@ -1,6 +1,13 @@
 "use client";
 
-import { ChangeEvent, useEffect, useMemo, useRef, useState } from "react";
+import {
+  ChangeEvent,
+  DragEvent,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from "react";
 import {
   ALLOWED_FILE_ACCEPT,
   ALLOWED_FILE_EXTENSION_SET,
@@ -126,6 +133,7 @@ export default function LibraryPage() {
   const [message, setMessage] = useState<ToastMessage | null>(null);
   const [isUploading, setIsUploading] = useState(false);
   const [isLoading, setIsLoading] = useState(true);
+  const [isDragActive, setIsDragActive] = useState(false);
   const [pendingDelete, setPendingDelete] = useState<{
     id: string;
     name: string;
@@ -262,25 +270,26 @@ export default function LibraryPage() {
     };
   }, [hasIndexingDocuments, t.library.operationError, t.library.indexSuccess]);
 
-  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
-    const input = event.target as HTMLInputElement;
-    const files = input.files;
-    if (!files || files.length === 0) {
+  const uploadFiles = async (
+    files: File[],
+    onComplete?: () => void,
+  ): Promise<void> => {
+    if (files.length === 0) {
       return;
     }
 
-    const invalidFiles = Array.from(files).filter(
+    const invalidFiles = files.filter(
       (file) => !isSupportedFile(file.name),
     );
 
     if (invalidFiles.length > 0) {
       setMessage({ type: "error", text: t.library.invalidType });
-      input.value = "";
+      onComplete?.();
       return;
     }
 
     const formData = new FormData();
-    Array.from(files).forEach((file) => formData.append("files", file));
+    files.forEach((file) => formData.append("files", file));
 
     setIsUploading(true);
     setMessage(null);
@@ -321,9 +330,52 @@ export default function LibraryPage() {
       }
       setMessage({ type: "error", text: fallback });
     } finally {
-      input.value = "";
+      onComplete?.();
       setIsUploading(false);
     }
+  };
+
+  const handleFileSelection = async (event: ChangeEvent<HTMLInputElement>) => {
+    const input = event.target as HTMLInputElement;
+    const files = input.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    await uploadFiles(Array.from(files), () => {
+      input.value = "";
+    });
+  };
+
+  const handleDropAreaDragOver = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    if (!isDragActive) {
+      setIsDragActive(true);
+    }
+  };
+
+  const handleDropAreaDragLeave = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+  };
+
+  const handleDropAreaDrop = (event: DragEvent<HTMLDivElement>) => {
+    event.preventDefault();
+    event.stopPropagation();
+    setIsDragActive(false);
+
+    if (isUploading) {
+      return;
+    }
+
+    const files = event.dataTransfer.files;
+    if (!files || files.length === 0) {
+      return;
+    }
+
+    void uploadFiles(Array.from(files));
   };
 
   const handleDelete = async (id: string) => {
@@ -418,10 +470,9 @@ export default function LibraryPage() {
 
   return (
     <section
-      className="relative flex flex-col space-y-6 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
+      className="flat-surface-1 relative flex flex-col space-y-6 overflow-hidden p-6 text-foreground dark:text-white sm:p-8"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-indigo-400/50 via-violet-400/40 to-transparent" />
       <header className="flex flex-col gap-4 sm:flex-row sm:items-end sm:justify-between">
         <div>
           <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
@@ -453,7 +504,16 @@ export default function LibraryPage() {
       </header>
 
       <div className="scrollbar-dark flex-1 space-y-4 overflow-y-auto pr-1">
-        <div className="rounded-[28px] border border-dashed border-border bg-muted/40 p-6 text-sm text-foreground dark:border-white/15 dark:bg-slate-950/60">
+        <div
+          onDragOver={handleDropAreaDragOver}
+          onDragLeave={handleDropAreaDragLeave}
+          onDrop={handleDropAreaDrop}
+          className={clsx(
+            "rounded-[16px] border border-dashed border-border bg-muted/40 p-6 text-sm text-foreground transition-colors dark:border-white/15 dark:bg-slate-950/60",
+            isDragActive &&
+              "border-sky-400 bg-sky-500/10 dark:border-sky-300 dark:bg-sky-400/10",
+          )}
+        >
           <p className="font-medium text-foreground">{t.library.dropLabel}</p>
           <p className="mt-2 text-xs text-muted-foreground">
             {t.library.uploadHint}
@@ -462,7 +522,7 @@ export default function LibraryPage() {
 
         {message && (
           <div
-            className={`rounded-[28px] px-5 py-3 text-sm ${
+            className={`rounded-[16px] px-5 py-3 text-sm ${
               message.type === "error"
                 ? isLight
                   ? "border border-red-200 bg-red-50 text-red-800"
@@ -476,7 +536,7 @@ export default function LibraryPage() {
           </div>
         )}
 
-        <div className="overflow-hidden rounded-[28px] border border-border dark:border-white/10">
+        <div className="overflow-hidden rounded-[16px] border border-border dark:border-white/10">
           <div className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] gap-4 border-b border-border bg-muted/70 px-7 py-3 text-xs font-semibold uppercase tracking-[0.3em] text-muted-foreground dark:border-white/10 dark:bg-slate-950/70">
             <span>{t.library.tableHeaders.name}</span>
             <span>{t.library.tableHeaders.size}</span>
@@ -511,7 +571,7 @@ export default function LibraryPage() {
                 return (
                   <div
                     key={doc.id}
-                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-foreground transition duration-200 animate-slide-up hover:bg-white/5 dark:text-white/90 dark:hover:bg-white/5"
+                    className="grid grid-cols-[2fr_minmax(0,0.7fr)_minmax(0,0.8fr)_minmax(0,0.9fr)] items-center gap-4 px-7 py-5 text-sm text-foreground transition duration-200 hover:bg-white/5 dark:text-white/90 dark:hover:bg-white/5"
                   >
                     <div className="min-w-0 space-y-1">
                       <p className="truncate text-base font-semibold text-foreground dark:text-white">

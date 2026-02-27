@@ -194,10 +194,9 @@ export default function SettingsPage() {
 
   return (
     <section
-      className="relative flex flex-col space-y-7 overflow-hidden rounded-[32px] border border-border bg-card/90 p-8 text-foreground shadow-xl shadow-slate-900/10 backdrop-blur animate-slide-up dark:border-white/10 dark:bg-slate-900/60 dark:text-white dark:shadow-violet-900/20"
+      className="flat-surface-1 relative flex flex-col space-y-7 overflow-hidden p-6 text-foreground dark:text-white sm:p-8"
       style={{ height: "min(794px, calc(100vh - 220px))" }}
     >
-      <div className="pointer-events-none absolute inset-x-6 top-0 h-px bg-gradient-to-r from-cyan-400/45 via-emerald-300/35 to-transparent" />
       <header className="space-y-3">
         <h2 className="text-2xl font-semibold text-foreground sm:text-3xl">
           {t.settings.title}
@@ -205,10 +204,10 @@ export default function SettingsPage() {
       </header>
 
       <form
-        className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 animate-slide-delayed lg:grid-cols-2 lg:overflow-visible lg:pr-0"
+        className="scrollbar-dark grid flex-1 min-h-0 gap-6 overflow-y-auto pr-1 lg:grid-cols-2 lg:overflow-visible lg:pr-0"
         onSubmit={handleSubmit}
       >
-        <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+        <div className="space-y-5 rounded-[16px] border border-border bg-card p-6 dark:border-white/10 dark:bg-slate-950/60">
           <label className="block space-y-2 text-sm text-muted-foreground">
             <span className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               {t.settings.modelLabel}
@@ -228,11 +227,11 @@ export default function SettingsPage() {
             >
               <SelectTrigger
                 aria-label={t.settings.modelLabel}
-                className="h-auto min-h-[44px] w-full rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium leading-5 text-foreground shadow-inner shadow-slate-900/5 data-[placeholder]:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-white dark:shadow-violet-500/20"
+                className="h-auto min-h-[44px] w-full rounded-lg border border-border bg-card px-4 py-3 text-sm font-medium leading-5 text-foreground data-[placeholder]:text-muted-foreground focus:border-ring focus:ring-2 focus:ring-ring/30 dark:border-white/10 dark:bg-slate-900/70 dark:text-white"
               >
                 <SelectValue placeholder={t.settings.modelLabel} />
               </SelectTrigger>
-              <SelectContent className="border border-border bg-card text-foreground shadow-lg dark:border-white/10 dark:bg-slate-950/95 dark:text-white">
+              <SelectContent className="border border-border bg-card text-foreground dark:border-white/10 dark:bg-slate-950/95 dark:text-white">
                 {modelOptions.map((option) => (
                   <SelectItem
                     key={option.value}
@@ -347,7 +346,7 @@ export default function SettingsPage() {
           )}
         </div>
 
-        <div className="space-y-5 rounded-[28px] border border-border bg-card p-6 shadow-sm dark:border-white/10 dark:bg-slate-950/60">
+        <div className="space-y-5 rounded-[16px] border border-border bg-card p-6 dark:border-white/10 dark:bg-slate-950/60">
           <div className="space-y-3 rounded-2xl border border-dashed border-border bg-muted/40 p-5 dark:border-white/15 dark:bg-slate-900/70">
             <p className="text-xs font-semibold uppercase tracking-[0.28em] text-muted-foreground">
               {t.settings.quickPrompts.title}
@@ -392,9 +391,7 @@ export default function SettingsPage() {
               disabled={isSaving || isLoading}
               variant="cta"
               size="pill"
-              className={`w-fit font-semibold ${
-                isSaving ? "" : "animate-glow-soft"
-              }`}
+              className="w-fit font-semibold"
             >
               {isSaving ? t.settings.saving : t.settings.save}
             </Button>
