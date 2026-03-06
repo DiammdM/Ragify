@@ -4,7 +4,15 @@ A Next.js App Router RAG knowledge-base app with multilingual UI, document inges
 
 ## Demo 🎬
 
-Demo placeholder: drop your recording link or local asset here (for example, `[Watch the demo](./public/demo.mp4)` or a thumbnail linked to the video).
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=mJLi52-G84U" target="_blank">
+    <img src="https://img.youtube.com/vi/mJLi52-G84U/hqdefault.jpg" alt="Watch Ragify demo on YouTube" width="720" />
+  </a>
+</p>
+
+<p align="center">
+  <a href="https://www.youtube.com/watch?v=mJLi52-G84U">▶ Watch the demo on YouTube</a>
+</p>
 
 ## Features 🧩
 
